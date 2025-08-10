@@ -1,9 +1,17 @@
 
 Instruction on Running the project
 
-1. clone the repository
-2.  ```cd frontend```
-3. ```npm install```
-4. ```npm run dev``` -- to actually run the game
+```
+node -v
+npm -v
+```
+
+* If you see version numbers (e.g., `v20.5.0` and `10.2.0`), skip step 1. 
+
+1. ```brew install node```
+2. clone the repository
+3.  ```  d frontend```
+5. ```npm install```
+6. ```npm run dev``` -- to actually run the game
 
    
