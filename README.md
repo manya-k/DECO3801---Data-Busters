@@ -10,7 +10,7 @@ npm -v
 
 1. ```brew install node```
 2. clone the repository
-3.  ```  d frontend```
+3.  ```cd frontend```
 5. ```npm install```
 6. ```npm run dev``` -- to actually run the game
 
