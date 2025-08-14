@@ -1,5 +1,10 @@
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&display=swap');
 
+html, body, #root {
+  height: 100%;
+  margin: 0;
+}
+
 .main-screen {
   position: fixed;
   inset: 0;
@@ -81,6 +86,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  z-index: 2;
 }
 
 /* Modal content */
