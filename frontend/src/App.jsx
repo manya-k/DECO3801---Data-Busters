@@ -1,15 +1,20 @@
-import { useState } from 'react';
-import MainGameScreen from './MainGameScreen.jsx';
+import React from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import MainGameScreen from "./screens/MainGameScreen.jsx";
+import StoryScreen from "./screens/StoryScreen.jsx";
+import HowToPlayScreen from "./screens/HowToPlayScreen.jsx";
+
 
 function App() {
-  const [screen, setScreen] = useState('main');
-
-  const handleStart = () => setScreen('game');
-
-  if (screen === 'main') return <MainGameScreen onStart={handleStart} />;
-
-  // You can add other screens here
-  return null;
+  return (
+    <Router>
+      <Routes>
+        <Route path="/" element={<MainGameScreen />} />
+        <Route path="/story" element={<StoryScreen />} />
+        <Route path="/how-to-play" element={<HowToPlayScreen/>} />
+      </Routes>
+    </Router>
+  );
 }
 
 export default App;
