@@ -1,18 +1,15 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useState } from 'react';
+import MainGameScreen from './MainGameScreen.jsx';
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [screen, setScreen] = useState('main');
 
-  return (
-    <>
-      <div>
-        Hello World
-      </div>
-    </>
-  )
+  const handleStart = () => setScreen('game');
+
+  if (screen === 'main') return <MainGameScreen onStart={handleStart} />;
+
+  // You can add other screens here
+  return null;
 }
 
-export default App
+export default App;
