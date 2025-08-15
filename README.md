@@ -12,7 +12,6 @@ npm -v
 2. clone the repository
 3.  ```cd frontend```
 5. ```npm install```
-6. ```npm install react-router-dom```
-7. ```npm run dev``` -- to actually run the game
+6. ```npm run dev``` -- to actually run the game
 
    
