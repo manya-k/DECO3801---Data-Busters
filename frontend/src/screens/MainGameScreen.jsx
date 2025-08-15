@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import backgroundImg from "../assets/background.jpg";
-import "./mainGameScreen.css";
+import "./MainGameScreen.css";
 
 const MainGameScreen = () => {
   const navigate = useNavigate();
