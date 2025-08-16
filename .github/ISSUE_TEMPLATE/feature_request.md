@@ -16,14 +16,14 @@ If the ticket contains multiple components, you should explain them in more deta
 ## **Examples (optional)**
 - **Part/Feature**: Depending on the ticket, you will often want to provide some examples of how it would play out in the game. See next point for example...
 - **map seed**: maps can be generated from a "seed" where there may be different attributes, e.g. island, mainland, etc.
-# **Dependencies**
 
+# **Dependencies**
 List any features on which this ticket relies. If there is already an existing ticket, reference it using #xx. If a feature needs to be implemented and the issue does not already exist... make a new ticket and leave it unassigned for someone else to take on.
 
 e.g. Random game mode relies on random map seed generation(#xx).
 
 # **Milestones**
-List of sub-features you intend to have done and in Master by the end of the sprint.
+List of sub-features you intend to have done and in `main` by the end of the sprint.
 - [ ] Goal 1 (Aug. 20)
 - [ ] Goal 2 (Aug. 23)
 - [ ] Goal 3 (Aug. 26)
