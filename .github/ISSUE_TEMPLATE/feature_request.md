@@ -23,7 +23,7 @@ List any features on which this ticket relies. If there is already an existing t
 e.g. Random game mode relies on random map seed generation(#xx).
 
 # **Milestones**
-List of sub-features you intend to have done and in Master by the end of the sprint.
+List of sub-features you intend to have done and in `main` by the end of the sprint.
 - [ ] Goal 1 (Aug. 20)
 - [ ] Goal 2 (Aug. 23)
 - [ ] Goal 3 (Aug. 26)
