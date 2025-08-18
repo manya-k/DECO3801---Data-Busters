@@ -160,6 +160,7 @@ curl http://127.0.0.1:8000/api/storyline/choice?year=2035\&choice=no
 - Please create a new branch before developing (e.g., `feature/rag-module`, `feature/llm-api`)
 - Make sure to pull latest changes before working
 - Don’t commit `venv/` or `.sqlite3` files — they’re excluded via `.gitignore`
+- For frontend testing instructions and API usage, see [WIKI API Usage Guide for Frontend](https://github.com/manya-k/DECO3801---Data-Busters/wiki/API-Usage-Guide-for-Frontend)
 
 ---
 
@@ -185,7 +186,6 @@ fetch("http://127.0.0.1:8000/api/storyline/start?year=2035")
 - [ ] LLM story/question generation
 - [ ] Timeline & turn loop controller
 - [ ] AI image integration (ComfyUI or SD)
-- [ ] Multiplayer memory sync (Socket.io)
 
 ---
 
