@@ -1,4 +1,3 @@
-
 # Django settings for the MemorySim project
 # This file contains all the configuration settings for the Django application
 
@@ -35,11 +34,13 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     # Static files handling
     'django.contrib.staticfiles',
-    # CORS headers for cross-origin requests
+
+    # Third-party apps
     'corsheaders',
-    # Custom API app for handling API endpoints
+    'channels',          # NEW: add Django Channels for realtime support
+
+    # Custom apps
     'api',
-    # Core app for basic functionality
     'core',
 ]
 
@@ -88,6 +89,24 @@ TEMPLATES = [
 
 # WSGI application configuration for deployment
 WSGI_APPLICATION = 'memory_sim.wsgi.application'
+
+# --- Channels / ASGI configuration (for realtime websocket) ---
+ASGI_APPLICATION = 'memory_sim.asgi.application'
+
+# Channel layers - in-memory is fine for single server / kiosk usage
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer"
+    }
+}
+
+# --- Storyline game configuration ---
+# Single-room settings (museum / kiosk mode)
+MUSEUM_ROOM_ID = os.environ.get("MUSEUM_ROOM_ID", "MUSEUM")
+# Require both players to press "ready" to start (falls back to 1 if only one connected)
+MIN_READY_TO_START = 2
+# Require both players to choose before resolving (falls back to 1 if only one connected)
+MIN_CHOICES_TO_DECIDE = 2
 
 # Database configuration (using SQLite for development)
 DATABASES = {
