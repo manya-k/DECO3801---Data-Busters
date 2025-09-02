@@ -45,7 +45,8 @@ def _save_decision(record: dict):
     with _lock:
         arr = _load_decisions()
         arr.append(record)
-        DECISIONS_PATH.write_text(json.dumps(arr, indent=2), encoding="utf-8")
+        
+        # Atomic write
         tmp = DECISIONS_PATH.with_suffix(".json.tmp")
         tmp.write_text(json.dumps(arr, indent=2), encoding="utf-8")
         tmp.replace(DECISIONS_PATH)
