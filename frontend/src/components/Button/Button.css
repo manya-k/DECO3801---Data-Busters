@@ -69,3 +69,39 @@
   background-color: #4b5563; /* slightly darker gray on hover */
   transform: translateY(-2px);
 }
+.choice-container {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  right: 20px;
+  display: flex;
+  justify-content: center;
+  gap: 20px; 
+}
+
+.choice-btn {
+  width: 700px;       
+  height: 400px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: none;
+  border-radius: 16px;
+  font-size: 40px;
+  font-weight: 600;
+  text-align: center;
+  cursor: pointer;
+
+  background: #3b82f6;
+  color: white;
+}
+
+.choice-btn:hover {
+  background: #2563eb;
+  transform: translateY(-4px);
+}
+
+.choice-btn:active {
+  transform: translateY(-1px);
+}

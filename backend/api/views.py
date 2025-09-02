@@ -14,6 +14,8 @@ from rag.retrieve import retrieve_chunks
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_FILE = os.path.join(BASE_DIR, 'data', 'static_stories.json')
@@ -99,16 +101,21 @@ def get_story_result_by_choice(request):
         "next_year": entry["year"] + 1
     })
 
-
+@csrf_exempt
+@require_POST
 def get_story_result(request):
     """
     Retrieves the user's selected choice for a given question. This is a post method 
     which means this is directly retrived from the user input
     """
-    if request.method == "POST":
-        year = request.get("year")
-        choice = request.get("choice")
+    try:
+        body = json.loads(request.body.decode("utf-8"))
+    except json.JSONDecodeError:
+        return HttpResponseBadRequest("Invalid JSON")
 
+    year = body.get("year")
+    choice = body.get("choice")
+  
     if not year or not choice:
         return HttpResponseBadRequest("Missing 'year' or 'choice' parameter.")
 

@@ -15,15 +15,15 @@ logger = logging.getLogger(__name__)
 # Number of chunks to retrieve per query
 NUM_CHUNKS_PER_QUERY = 6
 
-setup()
-embeddings = get_ollama_embeddings()
+# setup()
+# embeddings = get_ollama_embeddings()
 
-logger.debug(f"Loading vector store from {DB_PATH}...")
-persisted_vectorstore = FAISS.load_local(DB_PATH, embeddings, allow_dangerous_deserialization=True)
+# logger.debug(f"Loading vector store from {DB_PATH}...")
+# persisted_vectorstore = FAISS.load_local(DB_PATH, embeddings, allow_dangerous_deserialization=True)
 
-# Create a retriever
-logger.debug("Creating retriever from vector store...")
-retriever = persisted_vectorstore.as_retriever(search_kwargs={"k": NUM_CHUNKS_PER_QUERY})  # Retrieve top N documents
+# # Create a retriever
+# logger.debug("Creating retriever from vector store...")
+# retriever = persisted_vectorstore.as_retriever(search_kwargs={"k": NUM_CHUNKS_PER_QUERY})  # Retrieve top N documents
 
 
 def retrieve_chunks(query: str) -> list[dict]:
