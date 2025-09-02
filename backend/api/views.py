@@ -7,6 +7,8 @@ import os
 import logging
 from django.http import JsonResponse, HttpResponseBadRequest
 from django.views.decorators.csrf import csrf_exempt
+from .game_state import submit_choice as gs_submit_choice, get_state as gs_get_state, reset_state as gs_reset_state
+from django.views.decorators.http import require_POST
 
 from rag.retrieve import retrieve_chunks
 
@@ -134,3 +136,75 @@ def rag_retrieve(request):
 
     items = retrieve_chunks(query)
     return JsonResponse({'items': items})
+
+@csrf_exempt
+@require_POST
+def get_story_result(request):
+    """
+    NEW: Multiplayer-aware choice submit.
+    - Accepts JSON: { "year": <int>, "choice": "<optionId>", "clientId": "<string>", "players": <int optional> }
+    - Returns:
+      {
+        "year": <currentYear>,
+        "choiceAccepted": true,
+        "decided": <bool>,
+        "decidedOption": "<optionId or null>",
+        "next_year": <int or null>,
+        "counts": {"yes": 1, "no": 1, ...},
+        "needed": <int>  # how many choices required to decide this round (for info)
+      }
+    """
+    try:
+        body = json.loads(request.body.decode("utf-8"))
+    except json.JSONDecodeError:
+        return HttpResponseBadRequest("Invalid JSON")
+
+    choice = body.get("choice")
+    # Optional: client identifier; if absent, we fallback to a coarse token
+    client_id = body.get("clientId")
+    if not client_id:
+        # coarse fallback: IP + UA; better to pass a real device token from the client
+        client_id = f"{request.META.get('REMOTE_ADDR','anon')}:{request.META.get('HTTP_USER_AGENT','ua')}"
+
+    # Optional: hint how many players you expect (1 or 2); default 2
+    players_hint = body.get("players", 2)
+    try:
+        players_hint = int(players_hint)
+    except Exception:
+        players_hint = 2
+    players_hint = max(1, min(players_hint, 8))
+
+    if not choice:
+        return HttpResponseBadRequest("Missing 'choice'.")
+
+    # Drive the single-room state machine
+    result = gs_submit_choice(client_id=client_id, choice=choice, connected_players_hint=players_hint)
+
+    # Compose response
+    resp = {
+        "choiceAccepted": True,
+        "decided": bool(result.get("decided")),
+        "decidedOption": result.get("decidedOption"),
+        "year": result.get("year"),
+        "next_year": result.get("next_year"),
+        "counts": result.get("counts", {}),
+        "needed": result.get("needed", None),
+        "done": result.get("done", False),
+    }
+    return JsonResponse(resp)
+
+
+def get_story_state(request):
+    """
+    NEW: Lightweight state for polling (for host icons).
+    Returns current year, question, options, and anonymous per-option counts.
+    """
+    return JsonResponse(gs_get_state())
+
+def reset_story(request):
+    """
+    OPTIONAL: Dev helper to reset the in-memory state.
+    """
+    gs_get_state()  # just to ensure module is loaded
+    gs_reset_state()
+    return JsonResponse({"ok": True})
