@@ -35,9 +35,9 @@ QUESTION_SCHEMA = {
         "options": {
             "type": "array",
             "items": {"type": "string"},
-            "minItems": 4,
-            "maxItems": 4,
-            "description": "Exactly 4 option strings"
+            "minItems": 2,
+            "maxItems": 2,
+            "description": "Exactly 2 option strings"
         }
     },
     "required": ["query_text", "question", "options"]
@@ -64,9 +64,9 @@ OPTIONS_REFINE_SCHEMA = {
         "options": {
             "type": "array",
             "items": {"type": "string"},
-            "minItems": 4,
-            "maxItems": 4,
-            "description": "Exactly 4 refined option strings"
+            "minItems": 2,
+            "maxItems": 2,
+            "description": "Exactly 2 refined option strings"
         }
     },
     "required": ["options"]
@@ -114,7 +114,7 @@ def call_ollama(prompt: str, json_schema: dict = None) -> dict:
 
 def validate_question_options(result: dict) -> bool:
     """
-    Validate that question result has exactly four valid options.
+    Validate that question result has exactly two valid options.
     
     Args:
         result: The question generation result to validate
@@ -128,8 +128,8 @@ def validate_question_options(result: dict) -> bool:
     
     options = result.get("options", [])
     
-    # Must be exactly 4 options (A, B, C, D)
-    if len(options) != 4:
+    # Must be exactly 2 options (A, B)
+    if len(options) != 2:
         return False
     
     # Each option must be a string with 6-14 words
@@ -183,8 +183,8 @@ def refine_question_options(original_result: dict) -> dict:
     fix_prompt = f"""
     Return ONLY valid JSON.
 
-    You previously produced a question but did not provide exactly four valid options.
-    Rewrite ONLY the "options" array with EXACTLY FOUR concise, mutually exclusive choices (6–14 words each).
+    You previously produced a question but did not provide exactly two valid options.
+    Rewrite ONLY the "options" array with EXACTLY TWO concise, mutually exclusive choices (6–14 words each).
     and do NOT repeat the question text.
 
     Question: {question}
@@ -193,9 +193,7 @@ def refine_question_options(original_result: dict) -> dict:
     {{
         "options": [
             "Option A",
-            "Option B", 
-            "Option C",
-            "Option D"
+            "Option B"
         ]
     }}
     """.strip()
@@ -212,23 +210,23 @@ def refine_question_options(original_result: dict) -> dict:
 
 def validate_image_texts(image_texts: Dict[str, str]) -> bool:
     """
-    Validate that exactly 4 unique non-empty string image texts are generated.
+    Validate that exactly 2 unique non-empty string image texts are generated.
     
     Args:
         image_texts: Dictionary mapping option labels to image descriptions
         
     Returns:
-        bool: True if valid (4 unique non-empty strings), False otherwise
+        bool: True if valid (2 unique non-empty strings), False otherwise
     """
     if not isinstance(image_texts, dict):
         return False
     
-    # Should have exactly 4 options
-    if len(image_texts) != 4:
+    # Should have exactly 2 options
+    if len(image_texts) != 2:
         return False
     
-    # Should have labels A, B, C, D
-    expected_labels = {'A', 'B', 'C', 'D'}
+    # Should have labels A, B
+    expected_labels = {'A', 'B'}
     if set(image_texts.keys()) != expected_labels:
         return False
     
@@ -239,7 +237,7 @@ def validate_image_texts(image_texts: Dict[str, str]) -> bool:
     
     # All image texts should be unique (no duplicates)
     texts = [text.strip() for text in image_texts.values()]
-    if len(set(texts)) != 4:
+    if len(set(texts)) != 2:
         return False
     
     return True
@@ -255,10 +253,10 @@ def generate_question(
     max_retries: int = 3,
 ) -> str:
     """
-    Generate a question with four options using the Ollama API and return as JSON string for database storage.
+    Generate a question with two options using the Ollama API and return as JSON string for database storage.
     
     This function creates a decision point in the narrative by generating a question
-    with exactly four mutually exclusive options that advance the story.
+    with exactly two mutually exclusive options that advance the story.
     
     Args:
         year: The current year in the story timeline
@@ -271,7 +269,7 @@ def generate_question(
         str: JSON string ready for database storage with keys:
             - query_text: RAG query for retrieving relevant information
             - question: The generated question
-            - options: List of exactly four option strings
+            - options: List of exactly two option strings
             
     Raises:
         Exception: If generation fails after all retries
@@ -307,9 +305,7 @@ def generate_question(
     if 'result' in locals():
         result["options"] = [
             "Take an action that advances the situation forward",
-            "Hold back and reconsider before making a move",
-            "Seek additional information before deciding",
-            "Propose an alternative approach to the situation"
+            "Hold back and reconsider before making a move"
         ]
         return json.dumps(result)
     
@@ -319,9 +315,7 @@ def generate_question(
         "question": "How should society proceed with memory editing technology?",
         "options": [
             "Take an action that advances the situation forward",
-            "Hold back and reconsider before making a move", 
-            "Seek additional information before deciding",
-            "Propose an alternative approach to the situation"
+            "Hold back and reconsider before making a move"
         ]
     }
     return json.dumps(fallback_result)
@@ -333,11 +327,11 @@ def generate_option_image_texts(
     background: str,
     last_description: str,
     question: str,
-    options: list,  # List of 4 option texts
+    options: list,  # List of 2 option texts
     max_retries: int = 2,
 ) -> str:
     """
-    Generate image descriptions for all four options and return as JSON string for database storage.
+    Generate image descriptions for both options and return as JSON string for database storage.
     
     This function creates visual descriptions for each option that can be used
     for image generation, allowing users to preview what each choice might lead to.
@@ -347,27 +341,25 @@ def generate_option_image_texts(
         background: The overall story background/setting
         last_description: Previous story summary/description
         question: The current question being asked
-        options: List of exactly 4 option texts [A, B, C, D]
+        options: List of exactly 2 option texts [A, B]
         max_retries: Maximum number of retry attempts for each option
         
     Returns:
-        str: JSON string ready for database storage, mapping option labels ('A', 'B', 'C', 'D') to image descriptions
+        str: JSON string ready for database storage, mapping option labels ('A', 'B') to image descriptions
         
     Raises:
-        ValueError: If options list doesn't contain exactly 4 items
+        ValueError: If options list doesn't contain exactly 2 items
     """
-    if len(options) != 4:
-        raise ValueError(f"Expected exactly 4 options, got {len(options)}")
+    if len(options) != 2:
+        raise ValueError(f"Expected exactly 2 options, got {len(options)}")
     
-    option_labels = ['A', 'B', 'C', 'D']
+    option_labels = ['A', 'B']
     image_texts = {}
     
     # Default fallback descriptions for each option type
     fallback_descriptions = [
         "Officials in a modern conference room discussing policy implementation",
-        "Researchers in a laboratory setting reviewing technical documentation", 
-        "Citizens in a public forum space engaged in community discussion",
-        "Experts in a consultation room analyzing regulatory frameworks"
+        "Researchers in a laboratory setting reviewing technical documentation"
     ]
     
     for i, (label, option_text) in enumerate(zip(option_labels, options)):
@@ -414,14 +406,12 @@ def generate_option_image_texts(
             image_texts[label] = fallback_descriptions[i]
             print(f"Option {label}: Using fallback description")
     
-    # Final validation to ensure 4 unique descriptions
+    # Final validation to ensure 2 unique descriptions
     if not validate_image_texts(image_texts):
         print("Generated image texts failed validation, using fallbacks")
         image_texts = {
             'A': fallback_descriptions[0],
-            'B': fallback_descriptions[1], 
-            'C': fallback_descriptions[2],
-            'D': fallback_descriptions[3]
+            'B': fallback_descriptions[1]
         }
     
     # Always return JSON string for database storage
@@ -435,11 +425,11 @@ def generate_option_descriptions(
     context_block: str,
     last_description: str,
     current_question: str,
-    options: list,  # List of 4 option texts
+    options: list,  # List of 2 option texts
     max_retries: int = 2,
 ) -> str:
     """
-    Generate story descriptions for all four options and return as JSON string for database storage.
+    Generate story descriptions for both options and return as JSON string for database storage.
     
     This function creates different narrative outcomes for each possible choice,
     allowing users to explore the consequences of each option.
@@ -450,22 +440,22 @@ def generate_option_descriptions(
         context_block: Retrieved context information for grounding
         last_description: Previous story summary/description
         current_question: The question that was presented to the player
-        options: List of exactly 4 option texts [A, B, C, D]
+        options: List of exactly 2 option texts [A, B]
         max_retries: Maximum number of retry attempts for each option
         
     Returns:
-        str: JSON string ready for database storage, mapping option labels ('A', 'B', 'C', 'D') 
+        str: JSON string ready for database storage, mapping option labels ('A', 'B') 
         to description results, each containing:
             - scenario: String paragraph (80-150 words)
             - query_text: RAG query string for next turn
             
     Raises:
-        ValueError: If options list doesn't contain exactly 4 items
+        ValueError: If options list doesn't contain exactly 2 items
     """
-    if len(options) != 4:
-        raise ValueError(f"Expected exactly 4 options, got {len(options)}")
+    if len(options) != 2:
+        raise ValueError(f"Expected exactly 2 options, got {len(options)}")
     
-    option_labels = ['A', 'B', 'C', 'D']
+    option_labels = ['A', 'B']
     option_descriptions = {}
     
     # Default fallback descriptions for each option type
@@ -473,18 +463,12 @@ def generate_option_descriptions(
         # Option A fallback
         "The policy-focused approach creates structured institutional changes as government agencies begin implementing new regulatory frameworks. Official committees meet to establish standardized procedures while public institutions adapt their operations to comply with new guidelines. The systematic approach ensures consistent implementation across all sectors, creating a foundation for regulated progress. Citizens observe these developments with cautious optimism, wondering how these changes will affect their daily lives. What balance between safety and innovation will ultimately emerge from this structured approach?",
         # Option B fallback
-        "The research-driven approach prioritizes scientific investigation as scientists launch comprehensive studies to gather empirical data. Research facilities expand their capabilities to support the investigation while academic institutions collaborate to publish findings and recommendations. Evidence-based conclusions guide future decision-making processes, ensuring that policy follows scientific understanding. The methodical pace frustrates some stakeholders who seek immediate solutions, yet others appreciate the thoroughness. How long will society wait for definitive answers before demanding action?",
-        # Option C fallback
-        "The community-centered approach emphasizes public participation as citizens organize town halls and public forums for discussion. Local communities form committees to represent diverse perspectives while grassroots movements emerge to advocate for community interests. Democratic processes ensure that all voices are heard and considered, creating a foundation of public trust. However, the diversity of opinions sometimes leads to prolonged debates and delayed decisions. Can collective wisdom overcome the challenges of reaching consensus?",
-        # Option D fallback
-        "The expert consultation approach relies on specialized knowledge as technical specialists convene to analyze complex implications. Professional organizations provide detailed assessments and guidance while industry experts share insights based on practical experience. Specialized knowledge informs strategic planning and implementation, leveraging years of accumulated expertise. Critics worry that expert perspectives may not fully account for public concerns and values. Will technical excellence translate into solutions that serve everyone's needs?"
+        "The research-driven approach prioritizes scientific investigation as scientists launch comprehensive studies to gather empirical data. Research facilities expand their capabilities to support the investigation while academic institutions collaborate to publish findings and recommendations. Evidence-based conclusions guide future decision-making processes, ensuring that policy follows scientific understanding. The methodical pace frustrates some stakeholders who seek immediate solutions, yet others appreciate the thoroughness. How long will society wait for definitive answers before demanding action?"
     ]
     
     fallback_queries = [
         "policy implementation and regulatory frameworks",
-        "scientific research and empirical evidence",
-        "community engagement and public participation",
-        "expert consultation and specialized knowledge"
+        "scientific research and empirical evidence"
     ]
     
     for i, (label, option_text) in enumerate(zip(option_labels, options)):

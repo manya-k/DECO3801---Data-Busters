@@ -191,13 +191,13 @@ def test_generate_option_image_texts(
 # Validate final results
 def validate_image_texts(image_texts: dict) -> bool:
     """
-    Validate that exactly 4 unique image texts are generated
+    Validate that exactly 2 unique image texts are generated
     """
-    if not isinstance(image_texts, dict) or len(image_texts) != 4:
+    if not isinstance(image_texts, dict) or len(image_texts) != 2:
         return False
     
-    # Should have labels A, B, C, D
-    expected_labels = {'A', 'B', 'C', 'D'}
+    # Should have labels A, B
+    expected_labels = {'A', 'B'}
     if set(image_texts.keys()) != expected_labels:
         return False
     
@@ -208,7 +208,7 @@ def validate_image_texts(image_texts: dict) -> bool:
     
     # All image texts should be unique (no duplicates)
     texts = [text.strip() for text in image_texts.values()]
-    if len(set(texts)) != 4:
+    if len(set(texts)) != 2:
         print("Warning: Some image descriptions are duplicates!")
         return False
     
@@ -223,9 +223,7 @@ if __name__ == "__main__":
     test_question = "How should memory editing consent procedures be implemented?"
     test_options = [
         "Establish strict government oversight with mandatory waiting periods",
-        "Allow clinics to self-regulate with professional guidelines", 
-        "Require independent patient advocates in all procedures",
-        "Create community-based review boards for approval decisions"
+        "Allow clinics to self-regulate with professional guidelines"
     ]
     
     print("=== Image Text Generation Test ===")

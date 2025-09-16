@@ -1,7 +1,7 @@
 """
 Test script for generate_option_descriptions function.
 
-This script tests the new function that generates descriptions for all 4 options
+This script tests the new function that generates descriptions for both options
 instead of just the selected one.
 """
 
@@ -23,9 +23,7 @@ def test_option_descriptions():
         "current_question": "How should society approach the regulation of memory editing technology?",
         "options": [
             "Implement strict government oversight with comprehensive licensing requirements",
-            "Allow market-driven development with minimal regulatory interference", 
-            "Establish international cooperation frameworks for global standards",
-            "Focus on community-based ethical review processes"
+            "Allow market-driven development with minimal regulatory interference"
         ]
     }
     
@@ -61,7 +59,7 @@ def test_option_descriptions():
         print(f"Result type: {type(results_json)} -> {type(results)}")
         
         # Display results for each option
-        for label in ['A', 'B', 'C', 'D']:
+        for label in ['A', 'B']:
             if label in results:
                 result = results[label]
                 print(f"OPTION {label} RESULT:")
@@ -84,10 +82,10 @@ def test_option_descriptions():
         print("VALIDATION RESULTS:")
         
         # Check if all options are present
-        expected_labels = {'A', 'B', 'C', 'D'}
+        expected_labels = {'A', 'B'}
         actual_labels = set(results.keys())
         if actual_labels == expected_labels:
-            print("[PASS] All 4 options generated successfully")
+            print("[PASS] Both options generated successfully")
         else:
             missing = expected_labels - actual_labels
             extra = actual_labels - expected_labels
@@ -129,18 +127,18 @@ def test_option_descriptions():
             all_scenarios.append(scenario_text)
             all_queries.append(result.get("query_text", ""))
         
-        if len(set(all_scenarios)) == 4:
-            print("[PASS] All scenarios are unique")
+        if len(set(all_scenarios)) == 2:
+            print("[PASS] Both scenarios are unique")
         else:
-            print("[WARN] Some scenarios might be duplicated")
+            print("[WARN] Scenarios might be duplicated")
         
-        if len(set(all_queries)) == 4:
-            print("[PASS] All query texts are unique")
+        if len(set(all_queries)) == 2:
+            print("[PASS] Both query texts are unique")
         else:
-            print("[WARN] Some query texts might be duplicated")
+            print("[WARN] Query texts might be duplicated")
             
         print(f"\nSUMMARY:")
-        print(f"Total options processed: {len(results)}/4")
+        print(f"Total options processed: {len(results)}/2")
         
         total_words = 0
         valid_scenarios = 0
@@ -157,7 +155,7 @@ def test_option_descriptions():
             print("Average scenario length: N/A (no valid scenarios)")
             
         print(f"Total execution time: {execution_time:.2f} seconds")
-        print(f"Average time per option: {execution_time/4:.2f} seconds")
+        print(f"Average time per option: {execution_time/2:.2f} seconds")
         print(f"Function execution: SUCCESS")
         
     except Exception as e:

@@ -17,13 +17,13 @@ def call_ollama(prompt: str) -> dict:
     return json.loads(text)                  # Convert to Python dict
 
 # check valid options
-def valid_four_options(d: dict) -> bool:
+def valid_two_options(d: dict) -> bool:
     # Check if options key exists and is a list
     if "options" not in d or not isinstance(d["options"], list):
         return False
     options = d.get("options", [])
-    # must be exactly 4 options
-    if not options or len(options) != 4:
+    # must be exactly 2 options
+    if not options or len(options) != 2:
         return False
     for opt in options:
         if not isinstance(opt, str) or not (6 <= len(opt.split()) <= 14):
@@ -37,8 +37,8 @@ def refine_option_fix(original_json: dict) -> dict:
     fix_prompt = f"""
     Return ONLY valid JSON.
 
-    You previously produced a question but did not provide exactly four valid options.
-    Rewrite ONLY the "options" array with EXACTLY FOUR concise, mutually exclusive choices (6–14 words each).
+    You previously produced a question but did not provide exactly two valid options.
+    Rewrite ONLY the "options" array with EXACTLY TWO concise, mutually exclusive choices (6–14 words each).
     and do NOT repeat the question text.
 
     Question: {question}
@@ -47,16 +47,14 @@ def refine_option_fix(original_json: dict) -> dict:
     {{
         "options": [
             "Option A",
-            "Option B",
-            "Option C",
-            "Option D"
+            "Option B"
         ]
     }}
     """.strip()
 
     try:
         d = call_ollama(fix_prompt)
-        if valid_four_options(d):
+        if valid_two_options(d):
             original_json["options"] = d["options"]
     except Exception as e:
         print("refine_options_fix failed:", e)
@@ -75,25 +73,23 @@ def ensure_valid_options(prompt: str) -> dict:
     # Step A
     out = call_ollama(prompt)
     # Step B
-    if valid_four_options(out):
+    if valid_two_options(out):
         return out
     # Step C
     out = refine_option_fix(out)
-    if valid_four_options(out):
+    if valid_two_options(out):
         return out
     # Step D
     try:
         retry_out = call_ollama(prompt)
-        if valid_four_options(retry_out):
+        if valid_two_options(retry_out):
             return retry_out
     except Exception as e:
         print("retry call failed:", e)
     # Step E
     out["options"] = [
         "Take an action that advances the situation forward",
-        "Hold back and reconsider before making a move",
-        "Seek additional information before deciding",
-        "Propose an alternative approach to the situation"
+        "Hold back and reconsider before making a move"
     ]
     return out
 
