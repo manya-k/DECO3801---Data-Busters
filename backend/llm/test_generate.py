@@ -51,12 +51,15 @@ def test_generate_question():
     print("\nTest Case 1: Basic Memory Editing Scenario")
     
     try:
-        result = generate_question(
+        result_json = generate_question(
             year=2035,
             background="In 2035, global regulations begin piloting clinical memory editing as part of mental health research.",
             context_block="(1) consent processes require strict multi-factor verification; (2) research reports show both benefits and risks for identity stability.",
             last_description="Public debate has intensified as clinics prepare to enroll participants in early programs."
         )
+        
+        # Parse the JSON string to get the actual result
+        result = json.loads(result_json)
         
         print("Question generation succeeded!")
         print_result(result, "Question Result")
@@ -88,13 +91,16 @@ def test_generate_option_image_texts():
             "Create community-based review boards for approval decisions"
         ]
         
-        result = generate_option_image_texts(
+        result_json = generate_option_image_texts(
             year=2035,
             background="In 2035, global regulations begin piloting clinical memory editing as part of mental health research.",
             last_description="Public debate has intensified as clinics prepare to enroll participants in early programs.",
             question="How should memory editing consent procedures be implemented?",
             options=options
         )
+        
+        # Parse the JSON string to get the actual result
+        result = json.loads(result_json)
         
         print("Image text generation succeeded!")
         print_result(result, "Image Texts Result")
@@ -128,7 +134,7 @@ def test_generate_option_descriptions():
             "Establish independent oversight committee for regulation"
         ]
         
-        result = generate_option_descriptions(
+        result_json = generate_option_descriptions(
             year=2035,
             background="In 2035, global regulations begin piloting clinical memory editing as part of mental health research.",
             context_block="(1) consent processes require strict multi-factor verification; (2) research reports show both benefits and risks for identity stability.",
@@ -136,6 +142,9 @@ def test_generate_option_descriptions():
             current_question="Should the government allow memory editing for clinical trials?",
             options=test_options
         )
+        
+        # Parse the JSON string to get the actual result
+        result = json.loads(result_json)
         
         print("Option descriptions generation succeeded!")
         print_result(result, "Option Descriptions Result")
@@ -212,12 +221,15 @@ def run_full_workflow_test():
     try:
         # Step 1: Generate question
         print("\nStep 1: Generating question...")
-        question_result = generate_question(
+        question_result_json = generate_question(
             year=2035,
             background="In 2035, global regulations begin piloting clinical memory editing as part of mental health research.",
             context_block="(1) consent processes require strict multi-factor verification; (2) research reports show both benefits and risks for identity stability.",
             last_description="Public debate has intensified as clinics prepare to enroll participants in early programs."
         )
+        
+        # Parse the JSON string to get the actual result
+        question_result = json.loads(question_result_json)
         
         # Since the API guarantees valid results, just check basic structure
         if not question_result or 'question' not in question_result:
@@ -236,13 +248,16 @@ def run_full_workflow_test():
             "Create community-based review boards for approval decisions"
         ]
         
-        image_result = generate_option_image_texts(
+        image_result_json = generate_option_image_texts(
             year=2035,
             background="In 2035, global regulations begin piloting clinical memory editing as part of mental health research.",
             last_description="Public debate has intensified as clinics prepare to enroll participants in early programs.",
             question=question_result['question'],
             options=test_options
         )
+        
+        # Parse the JSON string to get the actual result
+        image_result = json.loads(image_result_json)
         
         # Since the API guarantees valid results, just check basic structure
         if not image_result or len(image_result) != 4:
@@ -253,7 +268,7 @@ def run_full_workflow_test():
         
         # Step 3: Generate option descriptions for all 4 options
         print("\nStep 3: Generating option descriptions...")
-        option_descriptions_result = generate_option_descriptions(
+        option_descriptions_result_json = generate_option_descriptions(
             year=2035,
             background="In 2035, global regulations begin piloting clinical memory editing as part of mental health research.",
             context_block="(1) consent processes require strict multi-factor verification; (2) research reports show both benefits and risks for identity stability.",
@@ -261,6 +276,9 @@ def run_full_workflow_test():
             current_question=question_result['question'],
             options=test_options
         )
+        
+        # Parse the JSON string to get the actual result
+        option_descriptions_result = json.loads(option_descriptions_result_json)
         
         # Since the API guarantees valid results, just check basic structure
         if not option_descriptions_result or len(option_descriptions_result) != 4:

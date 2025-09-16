@@ -6,6 +6,7 @@
 import sys
 import os
 import django
+import json
 import logging
 
 logging.getLogger().setLevel(logging.ERROR)
@@ -60,7 +61,9 @@ def test_rag_adapter():
             context_block="Research context about sleep and memory",
             last_description="Previous research findings"
         )
-        print(f"LLM generated question: {question_result['question']}")
+        # Parse JSON string to get question text
+        parsed_question = json.loads(question_result)
+        print(f"LLM generated question: {parsed_question['question']}")
         
         # Use adapter to get RAG context
         rag_context = get_rag_context(question_result)
@@ -90,7 +93,9 @@ def test_full_integration():
             context_block="Scientific research context",
             last_description="Initial research setup"
         )
-        print(f"      Question: {question_result['question']}")
+        # Parse JSON string to get question text
+        parsed_question = json.loads(question_result)
+        print(f"      Question: {parsed_question['question']}")
         
         # 2. Get RAG context
         print("   Step 2: Getting RAG context...")
@@ -109,8 +114,9 @@ def test_full_integration():
             current_question="Should policy be influenced by the latest research findings?",
             selected_option="Implement new guidelines for post-sleep activities at clinics"
         )
-        # Check the new paragraph format
-        scenario = description_result['scenario']
+        # Parse JSON string and check the new paragraph format
+        parsed_description = json.loads(description_result)
+        scenario = parsed_description['scenario']
         if scenario and isinstance(scenario, str):
             word_count = len(scenario.split())
             print(f"      Generated scenario paragraph with {word_count} words")

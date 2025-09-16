@@ -41,7 +41,7 @@ def test_option_descriptions():
         print("Calling generate_option_descriptions...")
         start_time = time.time()
         
-        results = generate_option_descriptions(
+        results_json = generate_option_descriptions(
             year=test_data["year"],
             background=test_data["background"],
             context_block=test_data["context_block"],
@@ -55,6 +55,10 @@ def test_option_descriptions():
         
         print(f"[SUCCESS] Function call successful!")
         print(f"[TIMING] Execution time: {execution_time:.2f} seconds ({execution_time:.1f}s)\n")
+        
+        # Parse JSON result
+        results = json.loads(results_json)
+        print(f"Result type: {type(results_json)} -> {type(results)}")
         
         # Display results for each option
         for label in ['A', 'B', 'C', 'D']:

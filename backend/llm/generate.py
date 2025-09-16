@@ -253,9 +253,9 @@ def generate_question(
     context_block: str,
     last_description: str,
     max_retries: int = 3,
-) -> Dict[str, Any]:
+) -> str:
     """
-    Generate a question with four options using the Ollama API.
+    Generate a question with four options using the Ollama API and return as JSON string for database storage.
     
     This function creates a decision point in the narrative by generating a question
     with exactly four mutually exclusive options that advance the story.
@@ -268,7 +268,7 @@ def generate_question(
         max_retries: Maximum number of retry attempts for validation
         
     Returns:
-        Dict[str, Any]: Question result with keys:
+        str: JSON string ready for database storage with keys:
             - query_text: RAG query for retrieving relevant information
             - question: The generated question
             - options: List of exactly four option strings
@@ -284,7 +284,7 @@ def generate_question(
     try:
         result = call_ollama(prompt, QUESTION_SCHEMA)
         if validate_question_options(result):
-            return result
+            return json.dumps(result)
     except Exception as e:
         print(f"Initial question generation failed: {e}")
     
@@ -292,14 +292,14 @@ def generate_question(
     if 'result' in locals():
         result = refine_question_options(result)
         if validate_question_options(result):
-            return result
+            return json.dumps(result)
     
     # Step C: Retry main generation
     for attempt in range(max_retries):
         try:
             result = call_ollama(prompt, QUESTION_SCHEMA)
             if validate_question_options(result):
-                return result
+                return json.dumps(result)
         except Exception as e:
             print(f"Retry attempt {attempt + 1} failed: {e}")
     
@@ -311,10 +311,10 @@ def generate_question(
             "Seek additional information before deciding",
             "Propose an alternative approach to the situation"
         ]
-        return result
+        return json.dumps(result)
     
     # Ultimate fallback
-    return {
+    fallback_result = {
         "query_text": "memory editing ethical considerations",
         "question": "How should society proceed with memory editing technology?",
         "options": [
@@ -324,6 +324,7 @@ def generate_question(
             "Propose an alternative approach to the situation"
         ]
     }
+    return json.dumps(fallback_result)
 
 
 def generate_option_image_texts(
@@ -436,9 +437,9 @@ def generate_option_descriptions(
     current_question: str,
     options: list,  # List of 4 option texts
     max_retries: int = 2,
-) -> Dict[str, Dict[str, Any]]:
+) -> str:
     """
-    Generate story descriptions for all four options.
+    Generate story descriptions for all four options and return as JSON string for database storage.
     
     This function creates different narrative outcomes for each possible choice,
     allowing users to explore the consequences of each option.
@@ -453,7 +454,7 @@ def generate_option_descriptions(
         max_retries: Maximum number of retry attempts for each option
         
     Returns:
-        Dict[str, Dict[str, Any]]: Dictionary mapping option labels ('A', 'B', 'C', 'D') 
+        str: JSON string ready for database storage, mapping option labels ('A', 'B', 'C', 'D') 
         to description results, each containing:
             - scenario: String paragraph (80-150 words)
             - query_text: RAG query string for next turn
@@ -520,7 +521,8 @@ def generate_option_descriptions(
             }
             print(f"Option {label}: Using fallback description")
     
-    return option_descriptions
+    # Always return JSON string for database storage
+    return json.dumps(option_descriptions)
 
 
 def generate_description(
@@ -532,9 +534,9 @@ def generate_description(
     current_question: str,
     selected_option: str,
     max_retries: int = 3,
-) -> Dict[str, Any]:
+) -> str:
     """
-    Generate a story description based on the selected option.
+    Generate a story description based on the selected option and return as JSON string for database storage.
     
     This function creates the next part of the narrative by incorporating the
     player's choice and generating a vivid scenario with accompanying metadata.
@@ -549,7 +551,7 @@ def generate_description(
         max_retries: Maximum number of retry attempts for validation
         
     Returns:
-        Dict[str, Any]: Description result with keys:
+        str: JSON string ready for database storage with keys:
             - scenario: String paragraph (80-150 words)
             - query_text: RAG query string for next turn
             
@@ -567,7 +569,7 @@ def generate_description(
             result = call_ollama(prompt, DESCRIPTION_SCHEMA)
             
             if validate_description_scenario(result):
-                return result
+                return json.dumps(result)
             else:
                 print(f"Attempt {attempt + 1}: Scenario validation failed, retrying...")
                 
@@ -575,10 +577,11 @@ def generate_description(
             print(f"Attempt {attempt + 1}: Generation failed - {e}")
     
     # If all attempts fail, return a fallback result
-    return {
+    fallback_result = {
         "scenario": "The selected decision creates immediate ripple effects across institutions and communities as stakeholders gather in meeting rooms and public spaces to discuss the implications of this choice. New policies and procedures begin to take shape based on the direction that was chosen, while citizens and experts alike watch closely as the consequences unfold in real time. The path forward remains uncertain, but the choice has been made and will shape future developments. Implementation challenges emerge as different groups interpret the decision through their own perspectives and priorities. How will society adapt to the changes that this pivotal moment has set in motion?",
         "query_text": "policy implementation and social consequences of memory editing decisions"
     }
+    return json.dumps(fallback_result)
 
 
 
