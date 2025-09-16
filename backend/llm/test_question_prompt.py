@@ -4,26 +4,6 @@ from prompt_templates import build_question_prompt
 OLLAMA_URL = "http://localhost:11434/api/generate"
 MODEL = "phi3:3.8b"
 
-# Helper function to extract JSON from text
-def extract_json_block(text: str) -> str:
-    """
-    Ensure we always get a valid JSON string.
-    Handles cases like:
-    1) pure JSON
-    2) ```json ... ```
-    3) ``` ... ```
-    """
-    # First match ```json ... ```
-    m = re.search(r"```json\s*(\{.*\})\s*```", text, flags=re.S)
-    if m:
-        return m.group(1).strip()
-    # Second match ``` ... ```
-    m = re.search(r"```\s*(\{.*\})\s*```", text, flags=re.S)
-    if m:
-        return m.group(1).strip()
-    # Otherwise, return the original text
-    return text.strip()
-
 # Call the Ollama API with the given prompt and return a JSON response dict
 def call_ollama(prompt: str) -> dict:
     r = requests.post(
@@ -34,7 +14,6 @@ def call_ollama(prompt: str) -> dict:
     r.raise_for_status()
     data = r.json()  # Ollama's first JSON
     text = data.get("response", "").strip()  # Only get model output
-    text = extract_json_block(text)          # Remove possible code blocks
     return json.loads(text)                  # Convert to Python dict
 
 # check valid options

@@ -4,55 +4,42 @@ from prompt_templates import build_description_prompt
 OLLAMA_URL = "http://localhost:11434/api/generate"
 MODEL = "phi3:3.8b"
 
-# Helper function to extract JSON from text
-def extract_json_block(text: str) -> str:
-    """
-    Ensure we always get a valid JSON string.
-    Handles cases like:
-    1) pure JSON
-    2) ```json ... ```
-    3) ``` ... ```
-    """
-    # First match ```json ... ```
-    m = re.search(r"```json\s*(\{.*\})\s*```", text, flags=re.S)
-    if m:
-        return m.group(1).strip()
-    # Second match ``` ... ```
-    m = re.search(r"```\s*(\{.*\})\s*```", text, flags=re.S)
-    if m:
-        return m.group(1).strip()
-    # Otherwise, return the original text
-    return text.strip()
-
 # Helper: Validate scenario
-def validate_scenario(result: dict) -> bool:
+def validate_scenario(result):
     """
     Validate that scenario meets requirements:
-    - 5 sentences
+    - One paragraph string with 80-150 words
     """
-    scenario = result.get("scenario", [])
-    if not isinstance(scenario, list):
+    scenario = result.get("scenario", "")
+    if not isinstance(scenario, str):
         return False
 
-    if len(scenario) != 5:
+    if not scenario.strip():
+        return False
+    
+    # Check word count is between 80-150 words
+    word_count = len(scenario.split())
+    if not (80 <= word_count <= 150):
+        print(f"Word count validation failed: {word_count} words (expected 80-150)")
         return False
     
     return True
 
 # Call the Ollama API with the given prompt and return a JSON response dict with retries
 def call_ollama(prompt: str, max_retries: int = 3) -> dict:
-    payload = {"model": MODEL, "prompt": prompt}
-    
     for attempt in range(max_retries):
-        response = requests.post(OLLAMA_URL, json=payload, stream=True)
-        collected_output = ""
-        for line in response.iter_lines():
-            if line:
-                data = json.loads(line.decode("utf-8"))
-                collected_output += data.get("response", "")
+        response = requests.post(
+            OLLAMA_URL,
+            json={"model": MODEL, "prompt": prompt, "stream": False, "format": "json"},
+            timeout=60
+        )
+        response.raise_for_status()
+        
+        data = response.json()  # Ollama's response wrapper
+        text = data.get("response", "").strip()  # Extract model output
         
         try:
-            result = json.loads(extract_json_block(collected_output))
+            result = json.loads(text)  # Convert to Python dict
         except Exception as e:
             print(f"[Attempt {attempt+1}] JSON parse failed:", e)
             continue
@@ -68,6 +55,8 @@ def call_ollama(prompt: str, max_retries: int = 3) -> dict:
 
 # Test description prompt
 if __name__ == "__main__":
+    print("=== Testing Description Generation ===\n")
+    
     prompt = build_description_prompt(
         year=2035,
         background="In 2035, global regulations begin piloting clinical memory editing as part of mental health research.",
@@ -76,5 +65,21 @@ if __name__ == "__main__":
         current_question="Should the government allow memory editing for clinical trials?",
         selected_option="The government should allow memory editing for clinical trials with strict safeguards",
     )
+    
+    print("Calling Ollama API...")
     result = call_ollama(prompt)
+    
+    print("\n=== RESULTS ===")
     print("Clean JSON:\n", json.dumps(result, ensure_ascii=False, indent=2))
+    
+    # Additional validation info
+    if "scenario" in result and result["scenario"]:
+        scenario = result["scenario"]
+        word_count = len(scenario.split())
+        print(f"\n=== VALIDATION INFO ===")
+        print(f"Scenario word count: {word_count} words")
+        print(f"Word count valid: {'YES' if 80 <= word_count <= 150 else 'NO'}")
+        print(f"Scenario format: {'String paragraph' if isinstance(scenario, str) else 'Invalid format'}")
+        if "query_text" in result:
+            print(f"Query text length: {len(result['query_text'])} characters")
+        print(f"Overall validation: {'PASS' if validate_scenario(result) else 'FAIL'}")

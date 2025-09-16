@@ -5,7 +5,7 @@ Test script for the generate.py module
 This script tests all three main generation functions:
 - generate_question: Creates questions with multiple choice options
 - generate_option_image_texts: Creates image descriptions for each option
-- generate_description: Creates scenario descriptions
+- generate_option_descriptions: Creates scenario descriptions for all 4 options (paragraph format, 80-150 words)
 
 Prerequisites:
 1. Ollama should be running on localhost:11434
@@ -26,7 +26,7 @@ import requests
 from typing import Dict, Any, List
 
 # Import the functions we want to test
-from generate import generate_question, generate_option_image_texts, generate_description
+from generate import generate_question, generate_option_image_texts, generate_option_descriptions
 
 
 def print_separator(title: str):
@@ -112,35 +112,58 @@ def test_generate_option_image_texts():
     return True
 
 
-def test_generate_description():
-    """Test the generate_description function with sample data"""
-    print_separator("TESTING GENERATE_DESCRIPTION")
+def test_generate_option_descriptions():
+    """Test the generate_option_descriptions function with sample data"""
+    print_separator("TESTING GENERATE_OPTION_DESCRIPTIONS")
     
-    # Test case 1: Basic description generation
-    print("\nTest Case 1: Basic Description Generation")
+    # Test case 1: Basic option descriptions generation (paragraph format for all 4 options)
+    print("\nTest Case 1: Option Descriptions Generation (Paragraph Format)")
     
     try:
-        result = generate_description(
+        # Sample options for testing
+        test_options = [
+            "Allow memory editing with comprehensive safety protocols",
+            "Postpone implementation until more research is completed",
+            "Conduct limited pilot programs in select research facilities", 
+            "Establish independent oversight committee for regulation"
+        ]
+        
+        result = generate_option_descriptions(
             year=2035,
             background="In 2035, global regulations begin piloting clinical memory editing as part of mental health research.",
             context_block="(1) consent processes require strict multi-factor verification; (2) research reports show both benefits and risks for identity stability.",
             last_description="Public debate has intensified as clinics prepare to enroll participants in early programs.",
             current_question="Should the government allow memory editing for clinical trials?",
-            selected_option="The government should allow memory editing for clinical trials with strict safeguards"
+            options=test_options
         )
         
-        print("Description generation succeeded!")
-        print_result(result, "Description Result")
+        print("Option descriptions generation succeeded!")
+        print_result(result, "Option Descriptions Result")
         
-        # Since the API guarantees valid results, we just show the content
-        print("\nGenerated scenario sentences:")
-        scenario = result.get("scenario", [])
-        for i, sentence in enumerate(scenario):
-            print(f"{i+1}: {sentence}")
-            print(f"   Length: {len(sentence.split())} words")
+        # Validate all 4 option descriptions
+        print("\nGenerated option scenarios:")
+        option_labels = ['A', 'B', 'C', 'D']
+        
+        for label in option_labels:
+            if label in result:
+                option_data = result[label]
+                scenario = option_data.get("scenario", "")
+                
+                if scenario and isinstance(scenario, str):
+                    word_count = len(scenario.split())
+                    validation = 'PASS' if 80 <= word_count <= 150 else 'FAIL'
+                    
+                    print(f"\nOption {label}:")
+                    print(f"  Word count: {word_count} ({validation})")
+                    print(f"  Query: {option_data.get('query_text', 'N/A')}")
+                    print(f"  Content preview: {scenario[:100]}{'...' if len(scenario) > 100 else ''}")
+                else:
+                    print(f"\nOption {label}: Invalid scenario format")
+            else:
+                print(f"\nOption {label}: Missing from results")
             
     except Exception as e:
-        print(f"Description generation failed: {e}")
+        print(f"Option descriptions generation failed: {e}")
         return False
     
     return True
@@ -228,23 +251,40 @@ def run_full_workflow_test():
         
         print("Generated image texts for all 4 options")
         
-        # Step 3: Generate description (using first option)
-        print("\nStep 3: Generating description...")
-        description_result = generate_description(
+        # Step 3: Generate option descriptions for all 4 options
+        print("\nStep 3: Generating option descriptions...")
+        option_descriptions_result = generate_option_descriptions(
             year=2035,
             background="In 2035, global regulations begin piloting clinical memory editing as part of mental health research.",
             context_block="(1) consent processes require strict multi-factor verification; (2) research reports show both benefits and risks for identity stability.",
             last_description="Public debate has intensified as clinics prepare to enroll participants in early programs.",
             current_question=question_result['question'],
-            selected_option=test_options[0]
+            options=test_options
         )
         
         # Since the API guarantees valid results, just check basic structure
-        if not description_result or 'scenario' not in description_result:
-            print("Description generation returned invalid structure")
+        if not option_descriptions_result or len(option_descriptions_result) != 4:
+            print("Option descriptions generation returned invalid structure")
             return False
         
-        print("Generated complete scenario description")
+        # Validate all 4 option descriptions
+        valid_count = 0
+        for label in ['A', 'B', 'C', 'D']:
+            if label in option_descriptions_result:
+                scenario = option_descriptions_result[label].get('scenario', "")
+                if scenario and isinstance(scenario, str):
+                    word_count = len(scenario.split())
+                    if 80 <= word_count <= 150:
+                        valid_count += 1
+                        
+        print(f"Generated option descriptions: {valid_count}/4 options passed validation")
+        if valid_count != 4:
+            print("Option descriptions validation: FAIL")
+            return False
+        else:
+            print("Option descriptions validation: PASS")
+        
+        print("Generated complete option descriptions for all 4 choices")
         
         print("\nComplete workflow test passed!")
         print("All three generation functions work correctly and produce valid outputs")
@@ -286,12 +326,12 @@ def main():
     elif args.image_only:
         success &= test_generate_option_image_texts()
     elif args.description_only:
-        success &= test_generate_description()
+        success &= test_generate_option_descriptions()
     else:
         # Run all tests by default
         success &= test_generate_question()
         success &= test_generate_option_image_texts()
-        success &= test_generate_description()
+        success &= test_generate_option_descriptions()
         success &= run_full_workflow_test()
     
     # Summary

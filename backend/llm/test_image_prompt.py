@@ -1,22 +1,8 @@
 import requests, json, re, os, sys
 from prompt_templates import build_image_text_prompt
-from generate import call_ollama_text
 
 OLLAMA_URL = "http://localhost:11434/api/generate"
 MODEL = "phi3:3.8b"
-
-def call_ollama_text_with_cleaning(prompt: str) -> str:
-    """
-    Call Ollama API and return cleaned text response (for image descriptions).
-    Uses the call_ollama_text from generate.py and adds cleaning logic.
-    """
-    # Get raw text from generate.py function
-    text = call_ollama_text(prompt)
-    
-    # Clean up common Ollama output issues
-    text = clean_ollama_output(text)
-    
-    return text
 
 
 def clean_ollama_output(text: str) -> str:
@@ -159,44 +145,9 @@ def valid_image_text(text: str) -> bool:
     return True
 
 # Generate image description with validation and fallbacks
-def generate_single_image_text(
-    year: int,
-    background: str, 
-    last_description: str,
-    question: str,
-    option_text: str,
-    max_retries: int = 2
-) -> str:
-    """
-    Generate image description for a single option with validation
-    """
-    fallback_description = "A modern institutional setting with officials discussing policy decisions in a professional environment"
-    
-    for attempt in range(max_retries):
-        try:
-            prompt = build_image_text_prompt(
-                year=year,
-                background=background,
-                last_description=last_description,
-                question=question,
-                option_text=option_text
-            )
-            
-            generated_text = call_ollama_text_with_cleaning(prompt)
-            
-            if valid_image_text(generated_text):
-                return generated_text
-            else:
-                print(f"Attempt {attempt + 1}: Generated text failed validation")
-                print(f"Generated: '{generated_text}'")
-                
-        except Exception as e:
-            print(f"Attempt {attempt + 1}: Generation failed - {e}")
-    
-    print("Using fallback description")
-    return fallback_description
 
-# Test function for all four options
+
+# Test the actual generate_option_image_texts function from generate.py
 def test_generate_option_image_texts(
     year: int,
     background: str,
@@ -205,31 +156,34 @@ def test_generate_option_image_texts(
     options: list
 ) -> dict:
     """
-    Test image generation for all four options
+    Test the actual generate_option_image_texts function which returns JSON string
     """
-    if len(options) != 4:
-        raise ValueError(f"Expected exactly 4 options, got {len(options)}")
+    from generate import generate_option_image_texts
     
-    option_labels = ['A', 'B', 'C', 'D']
-    image_texts = {}
+    print("Calling actual generate_option_image_texts function...\n")
     
-    print("Generating image descriptions for all options...\n")
+    # Call the actual function (returns JSON string)
+    json_result = generate_option_image_texts(
+        year=year,
+        background=background,
+        last_description=last_description,
+        question=question,
+        options=options
+    )
     
-    for i, (label, option_text) in enumerate(zip(option_labels, options)):
-        print(f"=== Option {label}: {option_text} ===")
-        
-        image_text = generate_single_image_text(
-            year=year,
-            background=background,
-            last_description=last_description,
-            question=question,
-            option_text=option_text
-        )
-        
-        image_texts[label] = image_text
-        print(f"Generated: {image_text}")
-        print(f"Length: {len(image_text)} chars, {len(image_text.split())} words")
-        print(f"Valid: {valid_image_text(image_text)}")
+    print(f"Function returned type: {type(json_result)}")
+    print(f"JSON result: {json_result}")
+    print()
+    
+    # Parse JSON string back to dict for validation and display
+    image_texts = json.loads(json_result)
+    
+    print("Parsed image descriptions:")
+    for label, text in image_texts.items():
+        print(f"=== Option {label} ===")
+        print(f"Generated: {text}")
+        print(f"Length: {len(text)} chars, {len(text.split())} words")
+        print(f"Valid: {valid_image_text(text)}")
         print()
     
     return image_texts

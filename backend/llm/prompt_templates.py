@@ -72,19 +72,19 @@ def build_description_prompt(
     """
     STEP B: Given the player's selected option, produce the Scenario + follow-up RAG query.
     OUTPUT must be STRICT JSON:
-    - scenario: 5 sentences which is vivid and engaging.
-    - query_text: query_text for the NEXT turn's retrieval.
+    - scenario: single paragraph string which is vivid and engaging.
+    - query_text: declarative keyword phrase (no questions) for the NEXT turn's retrieval.
     """
     return f"""
 You are continuing a turn-based story. Incorporate the selected option and produce:
-1) A concrete scenario with exactly 5 sentences which is vivid and engaging.
-2) A focused follow-up retrieval query for the next turn.
+1) A concrete scenario paragraph which is vivid and engaging.
+2) A focused follow-up retrieval query as a declarative keyword phrase (not a question).
 
 CRITICAL VALIDATION REQUIREMENTS (Your response will be automatically validated):
 1. MUST return valid JSON format (no extra text before/after)
-2. MUST include "scenario" field as an array/list
-3. MUST include exactly 5 items in the "scenario" array (not 4, not 6)
-4. MUST include "query_text" field as a string
+2. MUST include "scenario" field as a string paragraph
+3. MUST include "query_text" field as a string
+4. Total word count for the scenario paragraph must be between 80-150 words
 5. If any of these requirements are not met, your response will be rejected and retried
 
 STORY FRAME
@@ -106,13 +106,14 @@ Selected Option:
 {selected_option}
 
 SCENARIO REQUIREMENTS
-- Output "scenario" as an array of sentences.
-- Exactly 5 sentences. Not 4. Not 6. Exactly 5.
-- Each sentence must contain 15–30 words (count words by spaces). If a sentence is shorter, expand with concrete details until it meets 15–30 words.
+- Output "scenario" as a single coherent paragraph string.
+- CRITICAL: Total word count MUST be between 80-150 words (count words by spaces). Your response will be REJECTED if under 80 words.
+- Write as one flowing narrative paragraph with multiple detailed sentences (aim for 4-6 sentences minimum).
 - Focus on institutional actors (clinics, agencies, councils, governments, consortia). Do not center individual doctors or patients; avoid personal names.
 - Overall causal arc: an institutional actor takes an action → visible consequences or public reactions. You do not need to repeat this structure inside every sentence.
 - Use simple, everyday language suitable for museum visitors or high-school students.
 - Make it vivid and engaging: include sensory details (lights, sounds, crowds) and small dramatic contrasts; at least one sentence should invite reflection with a question.
+- Add specific details: mention concrete locations, times, numbers, reactions, and outcomes to reach the required length.
 - Do not use arrows, symbols, headings, or labels like "result:"; write only natural sentences.
 
 ANTI-COPYING & VARIATION
@@ -120,45 +121,42 @@ ANTI-COPYING & VARIATION
 - Avoid these phrases entirely: "brightly lit", "holograms", "bustling public square", "marble walls", "glowing buttons".
 - Use different cities/venues than any example; vary institutions and settings.
 
-EXAMPLE TEMPLATE (structure only, NOT content to copy):
-"scenario": [
-  "<Government/Agency/Clinic/Consortium> announces a policy/action in <specific venue and city>, explaining goals and safeguards while audiences react with curiosity and caution about identity and privacy.",
-  "<Regulatory body/Clinic network> demonstrates procedures under strict consent checks, describing verification steps and displaying results as visitors weigh potential benefits against possible risks they can easily imagine.",
-  "<Council/Agency> hosts a public session in <concrete setting and time>, where signage, ambient sounds, or screen visuals shape the mood and make complex ideas feel tangible to everyday people.",
-  "<Government/Consortium> coordinates with partners across regions, promising oversight and transparency, while passerby debates and news tickers amplify hopes for treatment alongside doubts about unintended consequences.",
-  "<Parliament/Ethics council> invites reflection with a clear question about values and trade-offs, encouraging citizens to consider what should be protected if memories become editable in daily life."
-]
+EXAMPLE TEMPLATE (structure only, NOT content to copy - this example is approximately 95 words):
+"scenario": "<Government/Agency/Clinic/Consortium> announces a comprehensive policy/action at <specific venue and city> on <specific date>, explaining detailed goals and multiple safeguards while diverse audiences react with curiosity and measured caution about identity preservation and privacy implications. <Regulatory body/Clinic network> demonstrates standardized procedures under strict multi-step consent checks, describing verification protocols and displaying preliminary results as visitors carefully weigh potential cognitive benefits against possible psychological risks and societal consequences. <Council/Agency> hosts an extensive public session in <concrete setting and time>, where detailed signage, ambient sounds, and interactive screen visuals shape the contemplative mood and make complex scientific ideas feel tangible and accessible. <Government/Consortium> coordinates systematically with regional partners, promising rigorous oversight and transparent reporting, while ongoing debates and news coverage amplify both hopes alongside growing doubts about long-term consequences. What fundamental aspects of human identity should be protected if memories become editable in daily life?"
 
-HARD REMINDER
-- If the "scenario" array is not exactly 5 items, regenerate until it is exactly 5.
-- If any sentence is not within 15–30 words, regenerate until all five sentences meet 15–30 words.
+CRITICAL LENGTH REQUIREMENT
+- YOUR RESPONSE WILL BE AUTOMATICALLY REJECTED IF THE SCENARIO IS UNDER 80 WORDS.
+- Target 100-120 words for optimal length (well within the 80-150 range).
+- Include multiple detailed sentences with specific examples, locations, reactions, and consequences.
+- Add descriptive elements: specific venues, participant reactions, timeline details, policy specifics.
+- Count words carefully before finalizing your response.
 - Never include banned phrases.
 
-FOLLOW-UP RAG QUERY
+FOLLOW-UP RAG QUERY REQUIREMENTS
 - Base the query strictly on entities, mechanisms, or ethical dilemmas explicitly raised in the scenario.
 - Do not introduce unrelated topics.
+- CRITICAL: Write as a DECLARATIVE STATEMENT, not a question.
+- Format: "topic keywords and concepts" or "subject matter and related terms"
+- Examples: "memory editing consent procedures and safety protocols" | "clinical trial regulations and patient rights" | "institutional oversight and ethical guidelines"
+- Do NOT use question words (what, how, why, should, can, will, etc.) or question marks (?)
 
 OUTPUT FORMAT (STRICT)
 CRITICAL: Your response will be validated automatically. It MUST pass these checks:
 1. Valid JSON format (starts with {{ and ends with }})
-2. Contains "scenario" field as an array
-3. "scenario" array has EXACTLY 5 items (will be counted automatically)
+2. Contains "scenario" field as a string paragraph
+3. MANDATORY: Total word count of the scenario paragraph must be between 80-150 words (WILL BE REJECTED IF UNDER 80)
 4. Contains "query_text" field as a string
 5. No extra text outside the JSON structure
 
+BEFORE SUBMITTING: Count the words in your scenario. If under 80 words, add more specific details, institutional reactions, timeline information, or consequences until you reach at least 80 words.
+
 Return ONLY valid JSON with this exact schema:
 {{
-  "scenario": [
-    "<sentence 1>",
-    "<sentence 2>",
-    "<sentence 3>",
-    "<sentence 4>",
-    "<sentence 5>"
-  ],
-  "query_text": "<single concise sentence (<= 220 chars)>"
+  "scenario": "<one coherent paragraph with 80-150 words total>",
+  "query_text": "<declarative keyword phrase - no questions or question marks>"
 }}
 
-REMINDER: If you return anything other than exactly 5 scenario items, your response will be rejected.
+REMINDER: If the total word count is not between 80-150 words, your response will be rejected.
 Return ONLY valid JSON. Do not include markdown, code fences, or commentary.
 """.strip()
 

@@ -109,8 +109,15 @@ def test_full_integration():
             current_question="Should policy be influenced by the latest research findings?",
             selected_option="Implement new guidelines for post-sleep activities at clinics"
         )
-        print(f"      Generated {len(description_result['scenario'])} scenario segments")
-        print(f"      Example scenario: {description_result['scenario'][0]}")
+        # Check the new paragraph format
+        scenario = description_result['scenario']
+        if scenario and isinstance(scenario, str):
+            word_count = len(scenario.split())
+            print(f"      Generated scenario paragraph with {word_count} words")
+            print(f"      Word count validation: {'PASS' if 80 <= word_count <= 150 else 'FAIL'}")
+            print(f"      Example scenario: {scenario[:100]}...")
+        else:
+            print("      Generated invalid scenario format")
         
         print("\nFull integration test successful!")
         return True
