@@ -24,10 +24,6 @@ MODEL = "phi3:3.8b"
 QUESTION_SCHEMA = {
     "type": "object",
     "properties": {
-        "query_text": {
-            "type": "string",
-            "description": "Declarative keyword phrase for RAG retrieval"
-        },
         "question": {
             "type": "string", 
             "description": "The generated question"
@@ -38,9 +34,16 @@ QUESTION_SCHEMA = {
             "minItems": 2,
             "maxItems": 2,
             "description": "Exactly 2 option strings"
+        },
+        "option_queries": {
+            "type": "array",
+            "items": {"type": "string"},
+            "minItems": 2,
+            "maxItems": 2,
+            "description": "Exactly 2 RAG queries, one for each option"
         }
     },
-    "required": ["query_text", "question", "options"]
+    "required": ["question", "options", "option_queries"]
 }
 
 DESCRIPTION_SCHEMA = {
@@ -267,9 +270,9 @@ def generate_question(
         
     Returns:
         str: JSON string ready for database storage with keys:
-            - query_text: RAG query for retrieving relevant information
             - question: The generated question
             - options: List of exactly two option strings
+            - option_queries: List of two RAG queries, one for each option
             
     Raises:
         Exception: If generation fails after all retries
@@ -307,15 +310,24 @@ def generate_question(
             "Take an action that advances the situation forward",
             "Hold back and reconsider before making a move"
         ]
+        # Ensure option_queries exist
+        if "option_queries" not in result:
+            result["option_queries"] = [
+                "memory editing implementation policies and procedures",
+                "memory editing ethical concerns and safety considerations"
+            ]
         return json.dumps(result)
     
     # Ultimate fallback
     fallback_result = {
-        "query_text": "memory editing ethical considerations",
         "question": "How should society proceed with memory editing technology?",
         "options": [
             "Take an action that advances the situation forward",
             "Hold back and reconsider before making a move"
+        ],
+        "option_queries": [
+            "memory editing implementation policies and procedures",
+            "memory editing ethical concerns and safety considerations"
         ]
     }
     return json.dumps(fallback_result)

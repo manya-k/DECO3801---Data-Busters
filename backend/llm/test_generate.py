@@ -67,7 +67,8 @@ def test_generate_question():
         # Since the API guarantees valid results, we just check basic structure
         print(f"Question: {result.get('question', 'N/A')}")
         print(f"Number of options: {len(result.get('options', []))}")
-        print(f"Query text: {result.get('query_text', 'N/A')}")
+        print(f"Option queries: {result.get('option_queries', 'N/A')}")
+        print(f"Number of option queries: {len(result.get('option_queries', []))}")
             
     except Exception as e:
         print(f"Question generation failed: {e}")

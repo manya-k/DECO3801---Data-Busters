@@ -16,7 +16,7 @@ def call_ollama(prompt: str) -> dict:
     text = data.get("response", "").strip()  # Only get model output
     return json.loads(text)                  # Convert to Python dict
 
-# check valid options
+# check valid options and option_queries
 def valid_two_options(d: dict) -> bool:
     # Check if options key exists and is a list
     if "options" not in d or not isinstance(d["options"], list):
@@ -28,6 +28,18 @@ def valid_two_options(d: dict) -> bool:
     for opt in options:
         if not isinstance(opt, str) or not (6 <= len(opt.split()) <= 14):
             return False
+    
+    # Check if option_queries key exists and is a list
+    if "option_queries" not in d or not isinstance(d["option_queries"], list):
+        return False
+    option_queries = d.get("option_queries", [])
+    # must be exactly 2 queries
+    if not option_queries or len(option_queries) != 2:
+        return False
+    for query in option_queries:
+        if not isinstance(query, str) or len(query.strip()) == 0:
+            return False
+    
     return True
 
 # refine the option
@@ -48,6 +60,10 @@ def refine_option_fix(original_json: dict) -> dict:
         "options": [
             "Option A",
             "Option B"
+        ],
+        "option_queries": [
+            "query for option A",
+            "query for option B"
         ]
     }}
     """.strip()
@@ -56,6 +72,7 @@ def refine_option_fix(original_json: dict) -> dict:
         d = call_ollama(fix_prompt)
         if valid_two_options(d):
             original_json["options"] = d["options"]
+            original_json["option_queries"] = d["option_queries"]
     except Exception as e:
         print("refine_options_fix failed:", e)
     return original_json
@@ -91,6 +108,10 @@ def ensure_valid_options(prompt: str) -> dict:
         "Take an action that advances the situation forward",
         "Hold back and reconsider before making a move"
     ]
+    out["option_queries"] = [
+        "memory editing implementation policies and procedures",
+        "memory editing ethical concerns and safety considerations"
+    ]
     return out
 
 
@@ -106,3 +127,4 @@ if __name__ == "__main__":
     print("Clean JSON:\n", json.dumps(result, ensure_ascii=False, indent=2))
     print("\nQuestion:", result["question"])
     print("Options:", result["options"])
+    print("Option Queries:", result["option_queries"])

@@ -7,16 +7,16 @@ def build_question_prompt(
     last_description: str,
 ) -> str:
     """
-    STEP A: Ask the model to return a RAG query AND a multiple-choice style question with two options.
-    OUTPUT must be STRICT JSON with fields: query_text, question, options[2]
+    STEP A: Ask the model to return a multiple-choice style question with two options AND two corresponding RAG queries.
+    OUTPUT must be STRICT JSON with fields: question, options[2], option_queries[2]
     """
     return f"""
 You are a narrative engine for a turn-based story.
 
 TASK
-1) Build a retrieval query to fetch 3–6 highly relevant factual snippets for grounding.
-2) Propose ONE clear, decision-driving question WITH EXACTLY TWO OPTIONS (A, B). 
+1) Propose ONE clear, decision-driving question WITH EXACTLY TWO OPTIONS (A, B). 
    Each option must be short, mutually exclusive, and lead to meaningfully different outcomes.
+2) Build TWO specific retrieval queries (one for each option) to fetch 3–6 highly relevant factual snippets for grounding each option's consequences.
 
 STORY FRAME
 Current Year: {year}
@@ -35,7 +35,7 @@ HARD CONSTRAINTS
 - Return ONLY valid JSON (no markdown, no code fences).
 - The question must be specific and consequential for the next plot turn.
 - "options": an array of EXACTLY 2 strings. Avoid "Yes/No".
-- The retrieval query must be standalone (<= 110 chars) and safe to send to RAG.
+- Each retrieval query must be standalone (<= 110 chars) and safe to send to RAG.
 - Each option must be short (6–14 words), mutually exclusive, concrete, and must NOT repeat the question text.
 - Do NOT include labels like "A." or "B." inside option strings.
 - The two options MUST represent distinctly different approaches or philosophies.
@@ -45,16 +45,16 @@ HARD CONSTRAINTS
 OUTPUT FORMAT (STRICT)
 Return ONLY valid JSON with this exact schema:
 {{
-  "query_text": "<<=110 chars, standalone retrieval sentence>",
   "question": "<one question ending with a question mark>",
-  "options": ["<option A>", "<option B>"]
+  "options": ["<option A>", "<option B>"],
+  "option_queries": ["<query for option A>", "<query for option B>"]
 }}
 
 EXAMPLE (ONLY to learn the shape; DO NOT copy content):
 {{
-  "query_text": "clinical protocols for identity continuity in memory-editing pilots",
   "question": "Which approach should the regulatory committee prioritize?",
-  "options": ["Establish mandatory waiting periods for all procedures", "Create independent patient advocate programs"]
+  "options": ["Establish mandatory waiting periods for all procedures", "Create independent patient advocate programs"],
+  "option_queries": ["clinical protocols waiting periods memory editing safety", "patient advocacy programs memory editing support"]
 }}
 
 Return ONLY valid JSON. Do not include markdown, code fences, or commentary.
