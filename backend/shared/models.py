@@ -33,13 +33,6 @@ class Turn(models.Model):
     question = models.TextField(blank=True) # Generated question text
     question_generated_at = models.DateTimeField(null=True, blank=True)
     
-    # Description phase data  
-    description = models.TextField(blank=True) # Generated description/scenario text
-    description_generated_at = models.DateTimeField(null=True, blank=True)
-    
-    # RAG and LLM interaction data
-    question_query_text = models.TextField(blank=True) # Query text for generating next question
-    
     # User interaction (for shared session voting/consensus)
     user_choice = models.ForeignKey('Option', on_delete=models.SET_NULL, null=True, blank=True, related_name='chosen_by_turns') # Reference to the chosen option
     
@@ -59,11 +52,21 @@ class Option(models.Model):
     Each turn has exactly 2 options (A, B) with corresponding scenarios and image prompts.
     """
     turn = models.ForeignKey(Turn, on_delete=models.CASCADE, related_name='options')
+    
+    # Option with label (A or B)
     label = models.CharField(max_length=1) # A, B
     option_text = models.TextField(blank=True) # The actual option text displayed to user (may be empty initially)
+    
+    # Image generation prompt
     image_text = models.TextField(blank=True) # LLM generated prompt for image generation (can be empty initially)
+
+    # Scenario description
     scenario = models.TextField(blank=True) # Generated scenario description for this option (can be empty initially)
+    
+    # RAG and LLM interaction data
     scenario_query_text = models.TextField(blank=True) # Query text for generating next scenario based on this option (can be empty initially)
+    question_query_text = models.TextField(blank=True) # Query text for generating next question based on this option (can be empty initially)
+    
     created_at = models.DateTimeField(default=timezone.now)
 
     class Meta:
