@@ -12,4 +12,7 @@ urlpatterns = [
     path('storyline/result', views.get_story_result, name='storyline_result'),
     path('rag/retrieve', views.rag_retrieve, name='rag_retrieve'),
     path('storyline/result', views.get_story_result, name='storyline_result'),
+
+    path("gallery/<int:session_id>/", views.gallery_view, name="gallery_view"),
+    path('gallery/<int:session_id>', views.get_gallery_for_session, name='gallery_for_session'),
 ]

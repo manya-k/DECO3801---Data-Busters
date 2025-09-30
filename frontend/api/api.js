@@ -21,7 +21,7 @@ import axios from "axios";
  * @returns {AxiosInstance} A configured Axios instance for making HTTP requests.
  */
 const api = axios.create({
-  baseURL: "http://127.0.0.1:8000/api", // adjust if backend URL changes
+  baseURL: "http://127.0.0.1:9000/api", // adjust if backend URL changes
   headers: {
     "Content-Type": "application/json",
   },
