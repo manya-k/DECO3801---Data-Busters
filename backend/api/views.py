@@ -242,3 +242,27 @@ def display_scenario_and_image(request, session_id, turn_id, year, option_id):
             'success': False,
             'error': f'Failed to display world view: {str(e)}'
         }, status=500)
+
+from shared.models import TurnGenerationStatus
+# path('api/generation-status/<int:session_id>/<int:year>/'
+def check_generation_status(request, session_id, year):
+    """
+    Check if generation is finished for a specific turn.
+    
+    Returns: {"is_finished": true/false}
+    """
+    try:
+        gen_status = TurnGenerationStatus.objects.get(
+            session_id=session_id,
+            year=year
+        )
+        
+        return JsonResponse({
+            "is_finished": gen_status.is_finished()
+        })
+        
+    except TurnGenerationStatus.DoesNotExist:
+        return JsonResponse({
+            "is_finished": False,
+            "message": "Generation not started"
+        }, status=404)

@@ -101,3 +101,23 @@ class DefaultQueryList(models.Model):
 
     def __str__(self):
         return f'Default Query: {self.keyword}'
+
+class TurnGenerationStatus(models.Model):
+    """Tracks if background generation pipeline is complete for each turn"""
+    
+    session = models.ForeignKey(Session, on_delete=models.CASCADE, related_name='generation_statuses')
+    turn = models.ForeignKey(Turn, on_delete=models.CASCADE, null=True, blank=True)
+    year = models.IntegerField()
+    
+    # track parallel task completion
+    images_done = models.BooleanField(default=False)
+    scenarios_done = models.BooleanField(default=False)
+    
+    started_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        unique_together = ['session', 'year']
+    
+    def is_finished(self):
+        """Check if generation is complete"""
+        return self.images_done and self.scenarios_done

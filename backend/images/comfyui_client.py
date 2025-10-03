@@ -59,8 +59,8 @@ EXPORTED_WORKFLOW = {
   },
   "5": {
     "inputs": {
-      "width": 512,
-      "height": 512,
+      "width": 200,
+      "height": 200,
       "batch_size": 1
     },
     "class_type": "EmptyLatentImage",
@@ -83,7 +83,7 @@ EXPORTED_WORKFLOW = {
   },
   "7": {
     "inputs": {
-      "text": "text, watermark",
+      "text": "text, watermark, human, people, person, man, woman, face, portrait, crowd, body",
       "clip": [
         "4",
         1
@@ -239,7 +239,13 @@ def fetch_png_bytes(image_location: ImageLocation) -> bytes:
 # des8 = "A shadow-drenched sprawl where fading holograms sputter against cracked glass towers, crowds shuffle through dim corridors of fractured light, mood heavy and uncertain, dystopian speculative art, cinematic shadows, surreal atmospheric strokes."
 # des = ""
 
-# payload = build_prompt_payload(des)
+# des1 = "A surreal cityscape at dusk where neon billboards flicker with images of memories and thought bubbles drift through a skyline that blends the natural world with digital enhancements, reflecting society's division over memory modification in its hopeful yet tense atmosphere."
+# des2 = "A cinematic urban future landscape bathed in twilight neon glow with diverse crowds gathered around open-air memory clinics under hopeful skies."
+# des3 = "A radiant futuristic world filled with harmony and balance, glowing ethereal light, crystalline skylines, floating geometric forms, dreamlike atmosphere, surreal futuristic concept art, ultra-detailed, iridescent neon colors, hopeful and serene"
+# des4 = "A dark dystopian futuristic world filled with decay and despair, shattered structures dissolving into mist, oppressive shadows, chaotic and surreal landscape, futuristic but ruined, cinematic digital concept art, ominous and unsettling atmosphere"
+# des5 = "A surreal futuristic world in balance, glowing abstract structures suspended in an endless void, neither bright nor dark, muted neon tones, calm atmosphere, futuristic dreamlike concept art, mysterious and contemplative"
+# des6 = "A fragmented dystopian cityscape collapsing into shadowy neon voids, radiating tension and despair in surreal futuristic concept art"
+# payload = build_prompt_payload(des6)
 
 # prompt_id = enqueue_render(payload)
 # print("prompt_id is: ", prompt_id)

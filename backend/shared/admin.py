@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import WorldBackground, Session, Turn, Option, ImageRender, DefaultQueryList
+from .models import WorldBackground, Session, Turn, Option, ImageRender, DefaultQueryList, TurnGenerationStatus
 
 @admin.register(WorldBackground)
 class WorldBackgroundAdmin(admin.ModelAdmin):
@@ -103,3 +103,19 @@ class ImageRenderAdmin(admin.ModelAdmin):
 class DefaultQueryListAdmin(admin.ModelAdmin):
     list_display = ['keyword']
     search_fields = ['keyword']
+
+@admin.register(TurnGenerationStatus)
+class TurnGenerationStatusAdmin(admin.ModelAdmin):
+    list_display = ['session', 'year', 'turn_id_display', 'images_done', 'scenarios_done', 'finished', 'started_at']
+    list_filter = ['images_done', 'scenarios_done', 'session']
+    search_fields = ['year', 'session__id', 'turn__id']
+    ordering = ['-started_at']
+
+    def finished(self, obj):
+        return obj.is_finished()
+    finished.boolean = True
+    finished.short_description = 'Finished'
+
+    def turn_id_display(self, obj):
+        return obj.turn_id
+    turn_id_display.short_description = 'Turn ID'
