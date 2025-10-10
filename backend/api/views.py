@@ -244,7 +244,7 @@ def display_scenario_and_image(request, session_id, turn_id, year, option_id):
         }, status=500)
 
 from shared.models import TurnGenerationStatus
-# path('api/generation-status/<int:session_id>/<int:year>/'
+# path('status/pipeline/<int:session_id>/<int:year>/')
 def check_generation_status(request, session_id, year):
     """
     Check if generation is finished for a specific turn.
@@ -266,3 +266,19 @@ def check_generation_status(request, session_id, year):
             "is_finished": False,
             "message": "Generation not started"
         }, status=404)
+
+# path('status/question/<int:session_id>/<int:year>/')
+def question_status(request, session_id, year):
+    """
+    Returns question generation status for a given session and year.
+    """
+    session = Session.objects.filter(id=session_id).first()
+    if not session:
+        return JsonResponse({'error': 'Session not found'}, status=400)
+
+    status_entry = TurnGenerationStatus.objects.filter(session=session, year=year).first()
+    if not status_entry:
+        return JsonResponse({'status': 'pending'})
+
+    status_value = 'ready' if status_entry.question_done else 'pending'
+    return JsonResponse({'status': status_value})

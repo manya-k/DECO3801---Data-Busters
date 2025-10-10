@@ -42,6 +42,8 @@ def step1_generate_question(session_id: int, year: int):
     # link turn to status
     gen_status = TurnGenerationStatus.objects.get(session_id=session_id, year=year)
     gen_status.turn_id = turn_id
+    # mark question as complete
+    gen_status.question_done = True
     gen_status.save()
     
     # trigger step 2
@@ -121,10 +123,12 @@ def start_turn_pipeline(session_id: int, year: int):
     gen_status, created = TurnGenerationStatus.objects.get_or_create(
         session=session,
         year=target_year,
-        defaults={'images_done': False, 'scenarios_done': False}
+        defaults={'question_done': False,'images_done': False, 'scenarios_done': False}
     )
     
     if not created:
+        gen_status.turn = None
+        gen_status.question_done = False
         gen_status.images_done = False
         gen_status.scenarios_done = False
         gen_status.save()

@@ -108,11 +108,11 @@ class TurnGenerationStatus(models.Model):
     session = models.ForeignKey(Session, on_delete=models.CASCADE, related_name='generation_statuses')
     turn = models.ForeignKey(Turn, on_delete=models.CASCADE, null=True, blank=True)
     year = models.IntegerField()
-    
+    # track question progress
+    question_done = models.BooleanField(default=False)
     # track parallel task completion
     images_done = models.BooleanField(default=False)
     scenarios_done = models.BooleanField(default=False)
-    
     started_at = models.DateTimeField(auto_now_add=True)
     
     class Meta:

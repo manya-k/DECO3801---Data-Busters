@@ -21,10 +21,10 @@ EXPORTED_WORKFLOW = {
   "3": {
     "inputs": {
       "seed": 49289279412421,
-      "steps": 20,
+      "steps": 30,
       "cfg": 8,
-      "sampler_name": "euler",
-      "scheduler": "normal",
+      "sampler_name": "dpmpp_2m", #"euler",
+      "scheduler": "karras", #"normal",
       "denoise": 1,
       "model": [
         "4",
@@ -59,8 +59,8 @@ EXPORTED_WORKFLOW = {
   },
   "5": {
     "inputs": {
-      "width": 200,
-      "height": 200,
+      "width": 512,
+      "height": 512,
       "batch_size": 1
     },
     "class_type": "EmptyLatentImage",
@@ -83,7 +83,7 @@ EXPORTED_WORKFLOW = {
   },
   "7": {
     "inputs": {
-      "text": "text, watermark, human, people, person, man, woman, face, portrait, crowd, body",
+      "text": "text, watermark, logo, extra fingers, bad anatomy",
       "clip": [
         "4",
         1
@@ -244,15 +244,15 @@ def fetch_png_bytes(image_location: ImageLocation) -> bytes:
 # des3 = "A radiant futuristic world filled with harmony and balance, glowing ethereal light, crystalline skylines, floating geometric forms, dreamlike atmosphere, surreal futuristic concept art, ultra-detailed, iridescent neon colors, hopeful and serene"
 # des4 = "A dark dystopian futuristic world filled with decay and despair, shattered structures dissolving into mist, oppressive shadows, chaotic and surreal landscape, futuristic but ruined, cinematic digital concept art, ominous and unsettling atmosphere"
 # des5 = "A surreal futuristic world in balance, glowing abstract structures suspended in an endless void, neither bright nor dark, muted neon tones, calm atmosphere, futuristic dreamlike concept art, mysterious and contemplative"
-# des6 = "A fragmented dystopian cityscape collapsing into shadowy neon voids, radiating tension and despair in surreal futuristic concept art"
-# payload = build_prompt_payload(des6)
+des6 = "A fragmented dystopian cityscape collapsing into shadowy neon voids, radiating tension and despair in surreal futuristic concept art"
+payload = build_prompt_payload(des6)
 
-# prompt_id = enqueue_render(payload)
+prompt_id = enqueue_render(payload)
 # print("prompt_id is: ", prompt_id)
 
-# imagelocation = get_image_location(prompt_id)
+imagelocation = get_image_location(prompt_id)
 # print("image path is ", imagelocation.filename, imagelocation.subfolder, imagelocation.type)
 
-# content = fetch_png_bytes(imagelocation)
+content = fetch_png_bytes(imagelocation)
 # # http://127.0.0.1:8000/view?filename=ComfyUI_00037_.png&subfolder=&type=output
-# print("png bytes: ", content[:8])
+print("png bytes: ", content[:8])
