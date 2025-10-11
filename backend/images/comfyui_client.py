@@ -21,9 +21,9 @@ EXPORTED_WORKFLOW = {
   "3": {
     "inputs": {
       "seed": 49289279412421,
-      "steps": 30,
+      "steps": 20,
       "cfg": 8,
-      "sampler_name": "dpmpp_2m", #"euler",
+      "sampler_name": "euler_ancestral",#"dpmpp_2m", #"euler",
       "scheduler": "karras", #"normal",
       "denoise": 1,
       "model": [
@@ -244,7 +244,7 @@ def fetch_png_bytes(image_location: ImageLocation) -> bytes:
 # des3 = "A radiant futuristic world filled with harmony and balance, glowing ethereal light, crystalline skylines, floating geometric forms, dreamlike atmosphere, surreal futuristic concept art, ultra-detailed, iridescent neon colors, hopeful and serene"
 # des4 = "A dark dystopian futuristic world filled with decay and despair, shattered structures dissolving into mist, oppressive shadows, chaotic and surreal landscape, futuristic but ruined, cinematic digital concept art, ominous and unsettling atmosphere"
 # des5 = "A surreal futuristic world in balance, glowing abstract structures suspended in an endless void, neither bright nor dark, muted neon tones, calm atmosphere, futuristic dreamlike concept art, mysterious and contemplative"
-des6 = "A fragmented dystopian cityscape collapsing into shadowy neon voids, radiating tension and despair in surreal futuristic concept art"
+# des6 = "A dystopian cityscape at twilight where Geneva's Genetics Ethical Committee debates genome editing under surreal cyberpunk neon lights amidst a crowd of anxious citizens and hopeful volunteers in the midst of ethereal mist."
 # payload = build_prompt_payload(des6)
 
 # prompt_id = enqueue_render(payload)
