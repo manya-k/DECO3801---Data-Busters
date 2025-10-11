@@ -245,14 +245,14 @@ def fetch_png_bytes(image_location: ImageLocation) -> bytes:
 # des4 = "A dark dystopian futuristic world filled with decay and despair, shattered structures dissolving into mist, oppressive shadows, chaotic and surreal landscape, futuristic but ruined, cinematic digital concept art, ominous and unsettling atmosphere"
 # des5 = "A surreal futuristic world in balance, glowing abstract structures suspended in an endless void, neither bright nor dark, muted neon tones, calm atmosphere, futuristic dreamlike concept art, mysterious and contemplative"
 des6 = "A fragmented dystopian cityscape collapsing into shadowy neon voids, radiating tension and despair in surreal futuristic concept art"
-payload = build_prompt_payload(des6)
+# payload = build_prompt_payload(des6)
 
-prompt_id = enqueue_render(payload)
-# print("prompt_id is: ", prompt_id)
+# prompt_id = enqueue_render(payload)
+# # print("prompt_id is: ", prompt_id)
 
-imagelocation = get_image_location(prompt_id)
-# print("image path is ", imagelocation.filename, imagelocation.subfolder, imagelocation.type)
+# imagelocation = get_image_location(prompt_id)
+# # print("image path is ", imagelocation.filename, imagelocation.subfolder, imagelocation.type)
 
-content = fetch_png_bytes(imagelocation)
-# # http://127.0.0.1:8000/view?filename=ComfyUI_00037_.png&subfolder=&type=output
-print("png bytes: ", content[:8])
+# content = fetch_png_bytes(imagelocation)
+# # # http://127.0.0.1:8000/view?filename=ComfyUI_00037_.png&subfolder=&type=output
+# print("png bytes: ", content[:8])

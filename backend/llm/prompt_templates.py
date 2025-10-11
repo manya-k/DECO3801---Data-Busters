@@ -161,53 +161,6 @@ Return ONLY valid JSON. Do not include markdown, code fences, or commentary.
 """.strip()
 
 # old prompt
-# def build_image_text_prompt(
-#     year: int,
-#     background: str,
-#     last_description: str,
-#     question: str,
-#     option_text: str,
-# ) -> str:
-#     """
-#     Build a prompt to generate an image description for a specific option.
-#     This predicts what the visual scene would look like if this option is chosen.
-#     """
-#     return f"""
-# You are helping generate speculative art style image prompts for an AI image generation model.
-
-# The current world state is: {background}
-
-# Previous events: {last_description}
-
-# Current situation (Year {year}): {question}
-
-# If this option is chosen: {option_text}
-
-# Your task: Write one single detailed image prompt that captures the atmosphere of this world after choosing this specific option.
-
-# STRICT REQUIREMENTS:
-# - Output EXACTLY ONE sentence (no line breaks, no multiple sentences)
-# - Maximum 70 words (count your words carefully)
-# - Maximum 350 characters including spaces
-# - Use concrete, visual language only
-# - No quotes, no explanations, no meta-commentary
-# - No instruction acknowledgments (do not say "Here's" or "I'll create")
-
-# Focus on:
-# - The environment and overall scene (urban, rural, futuristic, dystopian, natural, etc.)
-# - The emotional mood (hopeful, doomed, neutral, chaotic, peaceful, tense, etc.) 
-# - The artistic style (speculative art, cinematic, surreal, painterly textures, neon lighting)
-
-# Do not describe exact numbers of people or micro actions. Instead, describe the overall crowd impression and the vibe of the world.
-
-# EXAMPLES (for structure reference only, create original content):
-# - "A cinematic government facility bathed in cold fluorescent lighting with officials reviewing documents at sterile desks"
-# - "Speculative art scene of a bustling clinic courtyard with hopeful citizens waiting under warm sunset lighting"
-
-# CRITICAL: Output only the final image prompt as one complete sentence. No additional text, explanations, or commentary.
-# """.strip()
-
-
 def build_image_text_prompt(
     year: int,
     background: str,
@@ -216,34 +169,81 @@ def build_image_text_prompt(
     option_text: str,
 ) -> str:
     """
-    Build a prompt to generate an image description for a specific world state.
-    Instead of describing specific events or actions, this prompt will capture
-    the overall atmosphere and vibe of the world at this point in time.
+    Build a prompt to generate an image description for a specific option.
+    This predicts what the visual scene would look like if this option is chosen.
     """
     return f"""
 You are helping generate speculative art style image prompts for an AI image generation model.
 
-World background: {background}
+The current world state is: {background}
 
-Recent changes: {last_description}
+Previous events: {last_description}
 
-Current year: {year}
+Current situation (Year {year}): {question}
 
-Your task: Write one single detailed image prompt that captures ONLY the overall atmosphere and vibe of this world in Year {year}.
-Focus only on the mood and environment.
+If this option is chosen: {option_text}
+
+Your task: Write one single detailed image prompt that captures the atmosphere of this world after choosing this specific option.
 
 STRICT REQUIREMENTS:
 - Output EXACTLY ONE sentence (no line breaks, no multiple sentences)
-- Maximum 70 words
+- Maximum 70 words (count your words carefully)
 - Maximum 350 characters including spaces
-- Use descriptive, visual language about environment, mood, and style
-- Do NOT describe people, faces, actions, or specific objects
-- Always futuristic and beyond reality (cinematic, surreal, speculative art)
+- Use concrete, visual language only
+- No quotes, no explanations, no meta-commentary
+- No instruction acknowledgments (do not say "Here's" or "I'll create")
 
-EXAMPLES (for structure reference only):
-- "A radiant futuristic skyline of crystalline towers glowing in neon haze, exuding harmony and serenity in surreal speculative art style"
-- "A shattered dystopian megacity dissolving into shadowy voids, radiating despair and unease in futuristic cinematic concept art"
+Focus on:
+- The environment and overall scene (urban, rural, futuristic, dystopian, natural, etc.)
+- The emotional mood (hopeful, doomed, neutral, chaotic, peaceful, tense, etc.) 
+- The artistic style (speculative art, cinematic, surreal, painterly textures, neon lighting)
 
-CRITICAL: Output only the final image prompt as one complete sentence. No extra explanations or commentary.
+Do not describe exact numbers of people or micro actions. Instead, describe the overall crowd impression and the vibe of the world.
+
+EXAMPLES (for structure reference only, create original content):
+- "A cinematic government facility bathed in cold fluorescent lighting with officials reviewing documents at sterile desks"
+- "Speculative art scene of a bustling clinic courtyard with hopeful citizens waiting under warm sunset lighting"
+
+CRITICAL: Output only the final image prompt as one complete sentence. No additional text, explanations, or commentary.
 """.strip()
+
+
+# def build_image_text_prompt(
+#     year: int,
+#     background: str,
+#     last_description: str,
+#     question: str,
+#     option_text: str,
+# ) -> str:
+#     """
+#     Build a prompt to generate an image description for a specific world state.
+#     Instead of describing specific events or actions, this prompt will capture
+#     the overall atmosphere and vibe of the world at this point in time.
+#     """
+#     return f"""
+# You are helping generate speculative art style image prompts for an AI image generation model.
+
+# World background: {background}
+
+# Recent changes: {last_description}
+
+# Current year: {year}
+
+# Your task: Write one single detailed image prompt that captures ONLY the overall atmosphere and vibe of this world in Year {year}.
+# Focus only on the mood and environment.
+
+# STRICT REQUIREMENTS:
+# - Output EXACTLY ONE sentence (no line breaks, no multiple sentences)
+# - Maximum 70 words
+# - Maximum 350 characters including spaces
+# - Use descriptive, visual language about environment, mood, and style
+# - Do NOT describe people, faces, actions, or specific objects
+# - Always futuristic and beyond reality (cinematic, surreal, speculative art)
+
+# EXAMPLES (for structure reference only):
+# - "A radiant futuristic skyline of crystalline towers glowing in neon haze, exuding harmony and serenity in surreal speculative art style"
+# - "A shattered dystopian megacity dissolving into shadowy voids, radiating despair and unease in futuristic cinematic concept art"
+
+# CRITICAL: Output only the final image prompt as one complete sentence. No extra explanations or commentary.
+# """.strip()
 
