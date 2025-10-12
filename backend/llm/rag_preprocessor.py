@@ -3,7 +3,14 @@ RAG Content Preprocessor Module
 
 This module provides functionality to preprocess RAG (Retrieval-Augmented Generation) 
 content before feeding it to the main LLM generation pipeline. The preprocessor 
-summarizes and extracts key information to improve generation quality and speed.
+combines compression and simplification:
+
+- Summarizes content to 50 words or less for efficiency
+- Converts academic language to simple, easy-to-understand text
+- Makes research findings accessible for story generation
+
+This improves generation quality, speed, and makes academic research accessible
+for story generation about memory technology futures.
 """
 
 import requests
@@ -25,7 +32,7 @@ logger = logging.getLogger(__name__)
 
 def create_preprocessing_prompt(content: str) -> str:
     """
-    Create preprocessing prompt for RAG content summarization
+    Create preprocessing prompt for RAG content summarization and simplification
     
     Args:
         content: The content to be preprocessed
@@ -34,26 +41,36 @@ def create_preprocessing_prompt(content: str) -> str:
         str: The preprocessing prompt
     """
     return f"""
-You are a research assistant that extracts key information from scientific literature about memory technology and ethics.
+You are a science communicator who transforms complex academic research into simple, easy-to-understand content about memory technology and ethics.
 
-Your task: Analyze the following research content and create a concise summary that preserves the most important facts, findings, and ethical considerations.
+Your task: Convert the following academic research into simple, plain language that anyone can understand while preserving the most important facts.
 
 CRITICAL REQUIREMENTS:
 - STRICT WORD LIMIT: Output must be EXACTLY 50 words or fewer
 - COUNT YOUR WORDS: Ensure final output does not exceed 50 words
 - MANDATORY: If your summary approaches 50 words, stop immediately
-- Focus on: research findings, technological capabilities, ethical implications, policy considerations
-- Preserve specific numbers, dates, and technical details when relevant
-- Use bullet points for clarity
-- Remove redundant information and general background
+
+SIMPLIFICATION RULES:
+- Replace jargon with everyday words
+- Explain technical terms in simple language
+- Use short, clear sentences
+- Avoid academic phrases and complex terminology
+- Focus on what this means for regular people
+- Preserve key facts, numbers, and implications
+
+CONTENT FOCUS:
+- Research findings about memory technology
+- What this technology can do
+- Ethical concerns and risks
+- Impact on society
 
 RESEARCH CONTENT:
 {content}
 
 OUTPUT FORMAT:
-Return a clear, structured summary that preserves essential information for story generation about memory technology futures.
+Return simple, clear explanations that a 12-year-old could understand, while keeping essential information for story generation.
 
-FINAL CHECK: Before submitting, count your words. Your response must be 50 words or fewer.
+FINAL CHECK: Before submitting, count your words. Your response must be 50 words or fewer and use simple language.
 """.strip()
 
 
@@ -102,14 +119,14 @@ def call_preprocess_model(prompt: str, timeout: int = 45) -> Optional[str]:
 
 def preprocess_rag_content(content: str) -> str:
     """
-    Preprocess RAG content by extracting key information and summarizing
-    Only processes content when word count exceeds 50 words
+    Preprocess RAG content by extracting key information and making it accessible
+    Compresses content to 50 words while making academic language easy to understand
     
     Args:
         content: The RAG content string to be preprocessed
         
     Returns:
-        str: The preprocessed content
+        str: The preprocessed content (compressed + simplified)
     """
     # Check input
     if not content or not content.strip():
@@ -122,9 +139,9 @@ def preprocess_rag_content(content: str) -> str:
         logger.debug(f"Content already short ({word_count} words), skipping preprocessing")
         return content
     
-    logger.info(f"Starting preprocessing: {word_count} words → target 50 words")
+    logger.info(f"Starting preprocessing: {word_count} words → target 50 words + simplification")
     
-    # Create preprocessing prompt
+    # Create preprocessing prompt (includes both compression and simplification)
     prompt = create_preprocessing_prompt(content)
     
     # Call preprocessing model
@@ -132,7 +149,7 @@ def preprocess_rag_content(content: str) -> str:
     
     if processed_content:
         processed_words = len(processed_content.split())
-        logger.info(f"Preprocessing successful: {word_count} → {processed_words} words")
+        logger.info(f"Preprocessing successful: {word_count} → {processed_words} words (compressed & simplified)")
         return processed_content
     else:
         # Preprocessing failed, return original content
@@ -143,13 +160,13 @@ def preprocess_rag_content(content: str) -> str:
 def preprocess_rag_chunks(rag_chunks: list[dict]) -> str:
     """
     Preprocess RAG chunks and format them for LLM input
-    First format and combine all chunks, then preprocess the entire content for compression
+    First format and combine all chunks, then compress and simplify the entire content
     
     Args:
         rag_chunks: List of RAG retrieved chunks
         
     Returns:
-        str: Formatted and preprocessed context string
+        str: Formatted and preprocessed context string (compressed + simplified)
     """
     if not rag_chunks:
         return ""
@@ -165,7 +182,7 @@ def preprocess_rag_chunks(rag_chunks: list[dict]) -> str:
     # Step 2: Combine all chunks into a single string
     combined_content = "\n\n".join(formatted_chunks)
     
-    # Step 3: Preprocess the entire content for compression (only if word count > 50)
+    # Step 3: Preprocess the entire content (compress to 50 words + simplify language)
     processed_content = preprocess_rag_content(combined_content)
     return processed_content
 
