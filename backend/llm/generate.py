@@ -28,13 +28,13 @@ QUESTION_SCHEMA = {
     "properties": {
         "question": {
             "type": "string", 
-            "description": "18-30 words, specific, time-aware, builds on history"
+            "description": "18-35 words written as 2-3 short sentences, NOT one long sentence, builds on history"
         },
         "options": {
             "type": "array",
             "items": {
                 "type": "string",
-                "description": "10-18 words, concrete policy/action, mutually exclusive"
+                "description": "15-18 words, concrete policy/action, mutually exclusive"
             },
             "minItems": 2,
             "maxItems": 2,
@@ -44,7 +44,7 @@ QUESTION_SCHEMA = {
             "type": "array",
             "items": {
                 "type": "string",
-                "description": "<=80 chars keyword phrase for RAG retrieval"
+                "description": "3–6 lowercase keywords for retrieval (no verbs, no questions)"
             },
             "minItems": 2,
             "maxItems": 2,
@@ -59,7 +59,7 @@ DESCRIPTION_SCHEMA = {
     "properties": {
         "scenario": {
             "type": "string",
-            "description": "Single paragraph with 80-150 words"
+            "description": "Single paragraph with 6-9 short sentences, 80-150 words total"
         },
         "scenario_summary": {
             "type": "string",
@@ -150,9 +150,9 @@ def validate_question_options(result: dict) -> bool:
     if len(options) != 2:
         return False
     
-    # Each option must be a string with 6-20 words
+    # Each option must be a string with 6-25 words
     for opt in options:
-        if not isinstance(opt, str) or not (6 <= len(opt.split()) <= 20):
+        if not isinstance(opt, str) or not (6 <= len(opt.split()) <= 25):
             return False
     
     return True
@@ -178,10 +178,10 @@ def validate_description_scenario(result: dict) -> bool:
         print(f"Validation failed: scenario is empty")
         return False
     
-    # Check word count - fixed 50-150 words requirement
+    # Check word count
     word_count = len(scenario.split())
-    if not (50 <= word_count <= 150):
-        print(f"Validation failed: word count is {word_count}, expected 50-150")
+    if not (50 <= word_count <= 180):
+        print(f"Validation failed: word count is {word_count}, expected 50-180")
         return False
     
     return True
@@ -202,7 +202,7 @@ def refine_question_options(original_result: dict) -> dict:
     Return ONLY valid JSON.
 
     You previously produced a question but did not provide exactly two valid options.
-    Rewrite ONLY the "options" array with EXACTLY TWO concise, mutually exclusive choices (6–14 words each).
+    Rewrite ONLY the "options" array with EXACTLY TWO concise, mutually exclusive choices (10–15 words each).
     and do NOT repeat the question text.
 
     Question: {question}
@@ -391,27 +391,27 @@ def generate_question(
     # Step D: Fallback with default options
     if 'result' in locals():
         result["options"] = [
-            "Take an action that advances the situation forward",
-            "Hold back and reconsider before making a move"
+            "Move forward and try something new",
+            "Wait and think more about it first"
         ]
         # Ensure option_queries exist
         if "option_queries" not in result:
             result["option_queries"] = [
-                "memory editing implementation policies and procedures",
-                "memory editing ethical concerns and safety considerations"
+                "new technology and helpful changes",
+                "being careful and thinking about problems"
             ]
         return json.dumps(result)
     
     # Ultimate fallback
     fallback_result = {
-        "question": "How should society proceed with memory editing technology?",
+        "question": "What should people do about this new technology?",
         "options": [
-            "Take an action that advances the situation forward",
-            "Hold back and reconsider before making a move"
+            "Move forward and try something new",
+            "Wait and think more about it first"
         ],
         "option_queries": [
-            "memory editing implementation policies and procedures",
-            "memory editing ethical concerns and safety considerations"
+            "new technology and helpful changes",
+            "being careful and thinking about problems"
         ]
     }
     return json.dumps(fallback_result)
@@ -454,8 +454,8 @@ def generate_option_image_texts(
     
     # Default fallback descriptions for each option type
     fallback_descriptions = [
-        "Officials in a modern conference room discussing policy implementation",
-        "Researchers in a laboratory setting reviewing technical documentation"
+        "People in suits sitting around a big table talking about new rules",
+        "Scientists in white coats looking at computers and books in a lab"
     ]
     
     for i, (label, option_text) in enumerate(zip(option_labels, options)):
@@ -542,7 +542,7 @@ def generate_option_descriptions(
     Returns:
         str: JSON string ready for database storage, mapping option labels ('A', 'B') 
         to description results, each containing:
-            - scenario: String paragraph (80-150 words)
+            - scenario: String paragraph (70-120 words)
             - scenario_summary: Brief summary for story state tracking
             - query_text: RAG query string for next turn
             
@@ -561,14 +561,14 @@ def generate_option_descriptions(
     # Default fallback descriptions for each option type
     fallback_scenarios = [
         # Option A fallback
-        "The policy-focused approach creates structured institutional changes as government agencies begin implementing new regulatory frameworks. Official committees meet to establish standardized procedures while public institutions adapt their operations to comply with new guidelines. The systematic approach ensures consistent implementation across all sectors, creating a foundation for regulated progress. Citizens observe these developments with cautious optimism, wondering how these changes will affect their daily lives. What balance between safety and innovation will ultimately emerge from this structured approach?",
+        "The government decides to make new rules about the technology. Important people meet in big buildings to talk about what should be allowed and what should not be allowed. They write down the rules on paper and tell everyone what they have to do. Some people are happy because the rules help keep everyone safe. Other people are worried because the rules might slow down new discoveries. Everyone is watching to see what happens next. Will the new rules help people, or will they make things too hard?",
         # Option B fallback
-        "The research-driven approach prioritizes scientific investigation as scientists launch comprehensive studies to gather empirical data. Research facilities expand their capabilities to support the investigation while academic institutions collaborate to publish findings and recommendations. Evidence-based conclusions guide future decision-making processes, ensuring that policy follows scientific understanding. The methodical pace frustrates some stakeholders who seek immediate solutions, yet others appreciate the thoroughness. How long will society wait for definitive answers before demanding action?"
+        "Scientists want to learn more before making big decisions. They do lots of experiments and tests to understand how things work. Smart people in labs work together to find out what is safe and what might be dangerous. They write reports about what they discover and share their ideas with everyone. Some people think this is smart because they want to know all the facts first. Other people are getting impatient because they want answers right now. How long will everyone wait before something big happens?"
     ]
     
     fallback_queries = [
-        "policy implementation and regulatory frameworks",
-        "scientific research and empirical evidence"
+        "new rules and government decisions",
+        "science experiments and learning more"
     ]
     
     # Process context_block with story_state for each option
@@ -615,7 +615,7 @@ def generate_option_descriptions(
         if not success:
             option_descriptions[label] = {
                 "scenario": fallback_scenarios[i],
-                "scenario_summary": f"{'Policy-focused institutional changes' if i == 0 else 'Research-driven scientific investigation'} continue to develop",
+                "scenario_summary": f"{'Government makes new rules and people follow them' if i == 0 else 'Scientists do more tests to learn what is safe'} as things keep changing",
                 "query_text": fallback_queries[i]
             }
             print(f"Option {label}: Using fallback description")
