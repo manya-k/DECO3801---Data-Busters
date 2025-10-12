@@ -244,17 +244,17 @@ def fetch_png_bytes(image_location: ImageLocation) -> bytes:
 # des3 = "A radiant futuristic world filled with harmony and balance, glowing ethereal light, crystalline skylines, floating geometric forms, dreamlike atmosphere, surreal futuristic concept art, ultra-detailed, iridescent neon colors, hopeful and serene"
 # des4 = "A dark dystopian futuristic world filled with decay and despair, shattered structures dissolving into mist, oppressive shadows, chaotic and surreal landscape, futuristic but ruined, cinematic digital concept art, ominous and unsettling atmosphere"
 # des5 = "A surreal futuristic world in balance, glowing abstract structures suspended in an endless void, neither bright nor dark, muted neon tones, calm atmosphere, futuristic dreamlike concept art, mysterious and contemplative"
-des6 = "A cinematic artwork of Geneva's City Library grand hall in futuristic style during a committee meeting, draped with digital banners reflecting on CRISPR ethics under hopeful ambient lighting,"
+# des6 = "A cinematic artwork of Geneva's City Library grand hall in futuristic style during a committee meeting, draped with digital banners reflecting on CRISPR ethics under hopeful ambient lighting,"
 # des = "A futuristic urban landscape where a solemn Geneva Genetics Ethical Committee convenes in transparent bioluminescent domes amidst rustic countryside greenery under soft golden evening light."
-des = "A dystopian cityscape at night bathed in neon red and blue lights reflects off rain-soaked streets where a somber crowd gathers outside an imposing bioethics council building under the flickering gaze of holographic portraits."
-payload = build_prompt_payload(des)
+# des = "A dystopian cityscape at night bathed in neon red and blue lights reflects off rain-soaked streets where a somber crowd gathers outside an imposing bioethics council building under the flickering gaze of holographic portraits."
+# payload = build_prompt_payload(des)
 
-prompt_id = enqueue_render(payload)
-# print("prompt_id is: ", prompt_id)
+# prompt_id = enqueue_render(payload)
+# # print("prompt_id is: ", prompt_id)
 
-imagelocation = get_image_location(prompt_id)
-# print("image path is ", imagelocation.filename, imagelocation.subfolder, imagelocation.type)
+# imagelocation = get_image_location(prompt_id)
+# # print("image path is ", imagelocation.filename, imagelocation.subfolder, imagelocation.type)
 
-content = fetch_png_bytes(imagelocation)
-# # http://127.0.0.1:8000/view?filename=ComfyUI_00037_.png&subfolder=&type=output
-print("png bytes: ", content[:8])
+# content = fetch_png_bytes(imagelocation)
+# # # http://127.0.0.1:8000/view?filename=ComfyUI_00037_.png&subfolder=&type=output
+# print("png bytes: ", content[:8])
