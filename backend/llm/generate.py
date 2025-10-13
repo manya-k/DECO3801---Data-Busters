@@ -13,14 +13,24 @@ from typing import Dict, Any, Union
 # Handle imports for both relative (Django) and absolute (standalone) usage
 try:
     from .prompt_templates import build_question_prompt, build_description_prompt, build_image_text_prompt
-    from ..shared.constants import OLLAMA_LLM_MODEL
+    from ..shared.constants import (
+        OLLAMA_LLM_MODEL_QUESTION, 
+        OLLAMA_LLM_MODEL_SCENARIO, 
+        OLLAMA_LLM_MODEL_IMAGE,
+        OLLAMA_LLM_MODEL  # for backward compatibility
+    )
 except ImportError:
     from llm.prompt_templates import build_question_prompt, build_description_prompt, build_image_text_prompt
-    from shared.constants import OLLAMA_LLM_MODEL
+    from shared.constants import (
+        OLLAMA_LLM_MODEL_QUESTION, 
+        OLLAMA_LLM_MODEL_SCENARIO, 
+        OLLAMA_LLM_MODEL_IMAGE,
+        OLLAMA_LLM_MODEL  # for backward compatibility
+    )
 
 # Configuration constants
 OLLAMA_URL = "http://localhost:11434/api/generate"
-MODEL = OLLAMA_LLM_MODEL
+MODEL = OLLAMA_LLM_MODEL  # Default model for backward compatibility
 
 # JSON Schemas for structured output
 QUESTION_SCHEMA = {
@@ -90,13 +100,14 @@ OPTIONS_REFINE_SCHEMA = {
 
 # ---------- Shared helpers ----------
 
-def call_ollama(prompt: str, json_schema: dict = None) -> dict:
+def call_ollama(prompt: str, json_schema: dict = None, model: str = None) -> dict:
     """
     Call the Ollama API with the given prompt and return parsed JSON response.
     
     Args:
         prompt: The prompt to send to the model
         json_schema: Optional JSON schema to enforce response format
+        model: Optional model name to use (defaults to MODEL constant)
         
     Returns:
         dict: Parsed JSON response from the model
@@ -105,8 +116,9 @@ def call_ollama(prompt: str, json_schema: dict = None) -> dict:
         requests.RequestException: If the API call fails
         json.JSONDecodeError: If the response is not valid JSON
     """
+    selected_model = model if model else MODEL
     payload = {
-        "model": MODEL, 
+        "model": selected_model, 
         "prompt": prompt, 
         "stream": False, 
         "format": json_schema if json_schema else "json",
@@ -153,6 +165,11 @@ def validate_question_options(result: dict) -> bool:
     # Each option must be a string with 6-25 words
     for opt in options:
         if not isinstance(opt, str) or not (6 <= len(opt.split()) <= 25):
+            return False
+        
+        # Check for invalid "keywords" content (case insensitive)
+        if "keywords" in opt.lower():
+            print(f"Validation failed: Option contains 'keywords': {opt}")
             return False
     
     return True
@@ -217,7 +234,7 @@ def refine_question_options(original_result: dict) -> dict:
     """.strip()
 
     try:
-        refined_result = call_ollama(fix_prompt, OPTIONS_REFINE_SCHEMA)
+        refined_result = call_ollama(fix_prompt, OPTIONS_REFINE_SCHEMA, model=OLLAMA_LLM_MODEL_QUESTION)
         if validate_question_options(refined_result):
             original_result["options"] = refined_result["options"]
     except Exception as e:
@@ -367,7 +384,7 @@ def generate_question(
     
     # Step A: Main generation attempt
     try:
-        result = call_ollama(prompt, QUESTION_SCHEMA)
+        result = call_ollama(prompt, QUESTION_SCHEMA, model=OLLAMA_LLM_MODEL_QUESTION)
         if validate_question_options(result):
             return json.dumps(result)
     except Exception as e:
@@ -382,7 +399,7 @@ def generate_question(
     # Step C: Retry main generation
     for attempt in range(max_retries):
         try:
-            result = call_ollama(prompt, QUESTION_SCHEMA)
+            result = call_ollama(prompt, QUESTION_SCHEMA, model=OLLAMA_LLM_MODEL_QUESTION)
             if validate_question_options(result):
                 return json.dumps(result)
         except Exception as e:
@@ -484,7 +501,7 @@ def generate_option_image_texts(
                 }
                 
                 # Use JSON-based call for individual image descriptions
-                result = call_ollama(prompt, single_image_schema)
+                result = call_ollama(prompt, single_image_schema, model=OLLAMA_LLM_MODEL_IMAGE)
                 
                 # Extract the description from JSON result
                 if result and "description" in result and len(result["description"]) > 5:
@@ -599,7 +616,7 @@ def generate_option_descriptions(
                     selected_option=option_text
                 )
                 
-                result = call_ollama(prompt, DESCRIPTION_SCHEMA)
+                result = call_ollama(prompt, DESCRIPTION_SCHEMA, model=OLLAMA_LLM_MODEL_SCENARIO)
                 
                 if validate_description_scenario(result):
                     option_descriptions[label] = result

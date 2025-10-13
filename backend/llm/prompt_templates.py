@@ -93,12 +93,11 @@ Keep both parts simple and under 25 words in total.
 - Replace overly complex terms with simpler alternatives when possible: "establish"→"create", "implement"→"start", "institutions"→"groups", "participants"→"people", "consequences"→"results", utilize"→"use", "determine"→"decide", "eliminate"→"remove", "monitor"→"watch"
 
 OPTION BUILDING GUIDE
-- Use simple words everyone can understand.
-- Write 2 opposite choices (15–18 words each).
-- Each choice should describe a clear, visible action people, cities, or groups etc. could take.
-- Make one strict/careful (safety, control), the other open/risky (freedom, exploration).
-- Both choices must stay directly relevant to the question topic, not add unrelated ideas.
-- Avoid abstract or policy words like "regulate", "mandate", or "framework".
+- Use simple words everyone can understand, including children.
+- Write 2 clear actions (15–18 words each) that stay directly relevant to the question.
+- The choices should show different ways to solve the same problem: one strict/careful, the other open or exploratory.
+- Avoid abstract or policy terms like "regulate", "mandate", or "framework".
+- Both options must sound logical and reasonable within the story.
 
 --- KEYWORD EXTRACTION TASK ---
 - Extract 3–6 key nouns or short phrases from each option.
