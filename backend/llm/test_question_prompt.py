@@ -1,4 +1,4 @@
-import requests, json, re
+import requests, json, re, time
 from prompt_templates import build_question_prompt
 
 OLLAMA_URL = "http://localhost:11434/api/generate"
@@ -6,6 +6,7 @@ MODEL = "phi3:3.8b"
 
 # Call the Ollama API with the given prompt and return a JSON response dict
 def call_ollama(prompt: str) -> dict:
+    start_time = time.time()
     r = requests.post(
         OLLAMA_URL,
         json={"model": MODEL, "prompt": prompt, "stream": False, "format": "json"},
@@ -14,6 +15,8 @@ def call_ollama(prompt: str) -> dict:
     r.raise_for_status()
     data = r.json()  # Ollama's first JSON
     text = data.get("response", "").strip()  # Only get model output
+    end_time = time.time()
+    print(f"Generation time: {end_time - start_time:.2f} seconds")
     return json.loads(text)                  # Convert to Python dict
 
 # check valid options and option_queries
@@ -120,8 +123,7 @@ if __name__ == "__main__":
     prompt = build_question_prompt(
         2035,
         "In 2035, global regulations begin piloting clinical memory editing as part of mental health research.",
-        "(1) consent processes require strict multi-factor verification; (2) research reports show both benefits and risks for identity stability.",
-        "Public debate has intensified as clinics prepare to enroll participants in early programs."
+        "(1) consent processes require strict multi-factor verification; (2) research reports show both benefits and risks for identity stability. Public debate has intensified as clinics prepare to enroll participants in early programs."
         )
     result = ensure_valid_options(prompt)
     print("Clean JSON:\n", json.dumps(result, ensure_ascii=False, indent=2))
