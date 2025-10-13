@@ -24,7 +24,7 @@ EXPORTED_WORKFLOW = {
       "steps": 20,
       "cfg": 8,
       "sampler_name": "euler_ancestral",#"dpmpp_2m", #"euler",
-      "scheduler": "karras", #"karras",
+      "scheduler": "normal", #"karras",
       "denoise": 1,
       "model": [
         "4",
