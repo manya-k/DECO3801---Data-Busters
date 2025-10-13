@@ -2,22 +2,18 @@
 Business Service Layer for MemorySim
 
 This module provides high-level business logic functions that coordinate between
-different components (LLM, RAG, Database) to     # Step 6: Create new Turn record with story state
-    try:
-        new_turn = Turn.objects.create(
-            session=session,
-            year=year,
-            question=question_result.get('question', ''),
-            question_generated_at=timezone.now(),
-            story_state=current_story_state or {}
-        )
-        logger.info(f"Created new turn {new_turn.id} for year {year}")
-        
-    except Exception as e:
-        logger.error(f"Failed to create Turn record: {e}")
-        raise
-    
-    # Step 7: Create two Option recordsunctionality.
+different components (LLM, RAG, Database) to deliver complete game functionality.
+
+Key Functions:
+- generate_and_save_question(): Generate and save questions for new turns
+- generate_and_save_scenario(): Generate and save scenario descriptions 
+- generate_and_save_image_text(): Generate and save image descriptions
+- record_user_choice(): Record player's choice for a turn
+- display_world_view(): Display results after player makes a choice
+- get_session_status(): Get current session progress information
+
+This service layer handles the complete workflow from content generation 
+to database storage, ensuring data consistency and proper error handling.
 """
 
 import json
@@ -181,7 +177,7 @@ def generate_and_save_question(session_id: int, year: int) -> Dict[str, Any]:
         logger.error(f"LLM question generation failed: {e}")
         raise
     
-    # Step 9: Create new Turn record with story state
+    # Step 6: Create new Turn record with story state
     try:
         new_turn = Turn.objects.create(
             session=session,
@@ -196,7 +192,7 @@ def generate_and_save_question(session_id: int, year: int) -> Dict[str, Any]:
         logger.error(f"Failed to create Turn record: {e}")
         raise
     
-    # Step 10: Create two Option records
+    # Step 7: Create two Option records
     options_data = question_result.get('options', [])
     option_queries = question_result.get('option_queries', [])
     
