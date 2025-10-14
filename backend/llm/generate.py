@@ -134,7 +134,14 @@ def call_ollama(prompt: str, json_schema: dict = None, model: str = None) -> dic
     response.raise_for_status()
     
     data = response.json()  # Ollama's response wrapper
-    text = data.get("response", "").strip()  # Extract model output
+    
+    # Try to get response from different fields (Ollama versions may vary)
+    text = data.get("response", "").strip()
+    if not text and "thinking" in data:
+        text = data.get("thinking", "").strip()
+    
+    if not text:
+        raise ValueError(f"Empty response from Ollama. Full response: {data}")
     
     return json.loads(text)  # Convert to Python dict
 

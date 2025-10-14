@@ -152,7 +152,7 @@ def build_description_prompt(
         phase = "new-society"
         phase_themes = "kids grow up with it, changed human nature, memory trading, identity questions, what makes us human"
 
-    # Build world context with conditional handling (like build_question_prompt)
+    # Build world context with conditional handling
     if "Story History:" in context_block:
         world_ctx = f"""CURRENT WORLD STATE
 Year: {year}
@@ -187,33 +187,29 @@ Selected Option: {selected_option}
     
     return f"""
 ROLE
-You are a narrative engine for a turn-based story about humanity's relationship with memory editing technology.
+You are a scenario writer creating future consequences for a memory technology story game involving memory manipulation, enhancement, storage, and transfer etc.. 
+Your job is to show what happens after players choose specific actions, focusing on realistic societal changes and new challenges that emerge from their decisions.
 
 CORE MISSION
-Produce a vivid, time-aware scenario description that incorporates the selected option and advances the story timeline appropriate for the '{phase}' phase. Focus primarily on themes relevant to this time period.
+Generate a descriptive scenario (80-150 words) showing what happens after the selected option "{selected_option}" is implemented in {year}. 
+Write a narrative description of concrete consequences and changes - not instructions or questions. Include specific details about institutions, policies, and public reactions to meet length requirements.
 
 WORLD STATE & DECISION CONTEXT (read carefully; highest priority)
 {world_ctx}
 
-WORLD STATE GROWTH RULES
-- The story moves forward through different stages of social change
-- Story Connection: Each scenario must build upon what happened before and past decisions
-- Theme Growth: Move beyond basic actions to explore what happens next and how people react
-- PRIORITY: Story Context/History above is more important than background information
-
-NARRATIVE PROGRESS NEEDS
-- MANDATORY: Read the Story Context/History to understand what has already happened
-- FORBIDDEN: Go back to earlier times or repeat solved problems
-- REQUIRED: Focus on SPECIFIC results, reactions, or new things that happen from the chosen option
-- ADVANCED: Each scenario should show how the world has changed and bring up new challenges
-- BE SPECIFIC: Talk about real results (rule changes, public reactions, group changes, social fights)
+NARRATIVE PROGRESSION REQUIREMENTS
+- STORY CONTINUITY: Build upon Story Context/History but create NEW developments that show how the selected option "{selected_option}" uniquely changes the world
+- ANTI-REPETITION: Avoid repeating situations, phrases, or outcomes from previous scenarios - introduce at least 2 completely new elements (institutions, policies, locations, conflicts)
+- CHOICE SPECIFICITY: Show concrete, measurable results that directly stem from the selected option (new laws with specific names, public reactions in named locations, institutional changes with details)
+- FORWARD PROGRESSION: Move beyond basic actions to explore fresh consequences and emerging challenges never seen before
+- PRIORITY: Story Context/History takes precedence over background information - use it to create contrast and novelty
 
 SCENARIO WRITING GUIDE
-- MANDATORY YEAR REFERENCE: Start your scenario by mentioning the current year ({year}) in the opening sentence to establish when this is happening
-- Include specific details about this time period: real dates, places, group names, people's reactions, rule details, and what you can see/hear/feel  
+- CRITICAL YEAR REQUIREMENT: The FIRST sentence MUST start with {year} to establish temporal context
+- Include specific details about this time period: concrete dates, new institution names, people's reactions, policy details, and sensory atmosphere  
 - Write as one flowing story paragraph with 5-8 detailed sentences, 80-150 words total (CRITICAL: MUST BE AT LEAST 80 words or response will be rejected)
 - Focus on big groups (clinics, agencies, councils, governments, companies). Do not center individual doctors or patients; avoid personal names
-- Structure: Group takes action → Results happen → Public reacts → Thinking question (don't force this pattern into every sentence)
+- Structure: Selected option implementation → Specific results happen → Public reacts → New challenges emerge
 - Use clear, accessible language that children can understand but with sufficient detail for length requirements
 - Make it vivid and interesting: include what you can see/hear/feel (lights, sounds, crowds) and small dramatic differences; at least one sentence should make people think with a question
 - Balance simplicity with adequate detail - each sentence should contribute meaningful information
@@ -248,6 +244,8 @@ OUTPUT FORMAT (automatically validated):
 - Query text: Declarative keyword phrase (no questions)
 - FORBIDDEN: Template variables, brackets, HTML-like syntax, placeholder text
 - No markdown, code fences, or extra commentary
+
+Check your own output: if the length is too short or doesn't meet the requirements, revise it until it does.
 """.strip()
 
 
