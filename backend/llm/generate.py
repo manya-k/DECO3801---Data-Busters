@@ -8,7 +8,11 @@ for the MemorySim narrative game. It handles JSON validation, retries, and error
 import requests
 import json
 import re
+import logging
 from typing import Dict, Any, Union
+
+# Set up logger
+logger = logging.getLogger(__name__)
 
 # Handle imports for both relative (Django) and absolute (standalone) usage
 try:
@@ -38,13 +42,13 @@ QUESTION_SCHEMA = {
     "properties": {
         "question": {
             "type": "string", 
-            "description": "18-35 words written as 2-3 short sentences, NOT one long sentence, builds on history"
+            "description": "18-35 words written as 2-3 short sentences, with one question mark at the end"
         },
         "options": {
             "type": "array",
             "items": {
                 "type": "string",
-                "description": "15-18 words, concrete policy/action, mutually exclusive"
+                "description": "15-30 words, concrete policy/action, mutually exclusive"
             },
             "minItems": 2,
             "maxItems": 2,
@@ -169,16 +173,21 @@ def validate_question_options(result: dict) -> bool:
     if len(options) != 2:
         return False
     
-    # Each option must be a string with 6-25 words
+    # Each option must be a string with 6-35 words
     for opt in options:
-        if not isinstance(opt, str) or not (6 <= len(opt.split()) <= 25):
+        if not isinstance(opt, str) or not (6 <= len(opt.split()) <= 35):
             return False
         
         # Check for invalid "keywords" content (case insensitive)
-        if "keywords" in opt.lower():
-            print(f"Validation failed: Option contains 'keywords': {opt}")
+        if "keywords" in opt.lower() or "queries" in opt.lower():
+            print(f"Validation failed: Option contains 'keywords' or 'queries': {opt}")
             return False
-    
+
+        # Check if the sentence starts with a capital letter or digit
+        if not (opt[0].isupper() or opt[0].isdigit()):
+            print(f"Validation failed: Option does not start with a capital letter or digit: {opt}")
+            return False
+
     return True
 
 
@@ -223,13 +232,13 @@ def refine_question_options(original_result: dict) -> dict:
     """
     question = original_result.get("question", "")
     fix_prompt = f"""
-    Return ONLY valid JSON.
+   <|system|>
 
+    ROLE
+    You are a storyteller for a turn-based museum game about the future of memory technology.
     You previously produced a question but did not provide exactly two valid options.
-    Rewrite ONLY the "options" array with EXACTLY TWO concise, mutually exclusive choices (10–15 words each).
+    Rewrite two opposite mini-story option sentences with the REQUIRED STRUCTURE: "[WHO] should [ACTION] so that [RESULT]" with natural language only.
     and do NOT repeat the question text.
-
-    Question: {question}
 
     Output schema:
     {{
@@ -238,6 +247,11 @@ def refine_question_options(original_result: dict) -> dict:
             "Option B"
         ]
     }}
+
+    <|user|>
+    Question: {question}
+
+    <|assistant|>
     """.strip()
 
     try:
@@ -363,28 +377,36 @@ def generate_question(
     Raises:
         Exception: If generation fails after all retries
     """
+    print(f"[DEBUG] generate_question CALLED with year={year}, story_state={'present' if story_state else 'None'}")
+    logger.info(f"generate_question CALLED with year={year}, story_state={'present' if story_state else 'None'}")
+    
     # Year-based validation and context selection
     if year == 2035:
         # First year: use background directly without story state
+        logger.info(f"Year {year}: Using first year logic (no story_state)")
         prompt = build_question_prompt(
             year, background, context_block
         )
     elif story_state:
         # Subsequent years with story state: use all historical context
         history = story_state.get("history", [])
+        logger.info(f"Year {year}: Using story_state with {len(history)} history entries")
         
         # Build compressed context with all history and RAG content
         if history:
             history_context = "\n".join([f"Turn {i+1}: {summary}" for i, summary in enumerate(history)])
             compressed_context = f"Story History:\n{history_context}\n\nRAG Context: {context_block}"
+            logger.info(f"Year {year}: Built compressed context with history ({len(history_context)} chars)")
         else:
             compressed_context = f"RAG Context: {context_block}"
+            logger.info(f"Year {year}: story_state exists but history is empty, using RAG only")
             
         prompt = build_question_prompt(
             year, background, compressed_context
         )
     else:
         # Fallback for subsequent years without story state
+        logger.info(f"Year {year}: No story_state provided, using fallback context")
         prompt = build_question_prompt(
             year, background, context_block
         )
@@ -392,6 +414,13 @@ def generate_question(
     # Step A: Main generation attempt
     try:
         result = call_ollama(prompt, QUESTION_SCHEMA, model=OLLAMA_LLM_MODEL_QUESTION)
+
+        # Fix question if it doesn't end with question mark
+        if 'result' in locals() and 'question' in result:
+            question = result.get("question", "").strip()
+            if not question.endswith("?"):
+                result["question"] = question + " What should we do?"
+
         if validate_question_options(result):
             return json.dumps(result)
     except Exception as e:
@@ -407,24 +436,17 @@ def generate_question(
     for attempt in range(max_retries):
         try:
             result = call_ollama(prompt, QUESTION_SCHEMA, model=OLLAMA_LLM_MODEL_QUESTION)
+
+            # Fix question if it doesn't end with question mark
+            if 'result' in locals() and 'question' in result:
+                question = result.get("question", "").strip()
+                if not question.endswith("?"):
+                    result["question"] = question + " What should we do?"
+
             if validate_question_options(result):
                 return json.dumps(result)
         except Exception as e:
             print(f"Retry attempt {attempt + 1} failed: {e}")
-    
-    # Step D: Fallback with default options
-    if 'result' in locals():
-        result["options"] = [
-            "Move forward and try something new",
-            "Wait and think more about it first"
-        ]
-        # Ensure option_queries exist
-        if "option_queries" not in result:
-            result["option_queries"] = [
-                "new technology and helpful changes",
-                "being careful and thinking about problems"
-            ]
-        return json.dumps(result)
     
     # Ultimate fallback
     fallback_result = {
@@ -602,16 +624,20 @@ def generate_option_descriptions(
         # Process context_block with story state
         if year == 2035:
             processed_context = context_block
+            print(f"[DEBUG] Option {label} Year {year}: Using basic context (first year)")
         elif story_state:
             history = story_state.get("history", [])
             if history:
                 history_context = "\n".join([f"Turn {i+1}: {summary}" for i, summary in enumerate(history)])
                 processed_context = f"Story History:\n{history_context}\n\nRAG Context: {context_block}"
+                print(f"[DEBUG] Option {label} Year {year}: Using story_state with {len(history)} history entries")
             else:
                 processed_context = f"RAG Context: {context_block}"
+                print(f"[DEBUG] Option {label} Year {year}: story_state exists but history is empty")
         else:
             # Fallback
             processed_context = context_block
+            print(f"[DEBUG] Option {label} Year {year}: No story_state provided, using fallback")
         
         for attempt in range(max_retries):
             try:

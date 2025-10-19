@@ -1,5 +1,17 @@
 from typing import List
 
+STORY_LANGUAGE_RULES = """
+Write like you're telling a story to everyone, including kids aged 10-14:
+- Use simple words: "groups" not "institutions", "people" not "participants", "rules" not "regulations"
+- Use action words: "create" not "establish", "start" not "implement", "watch" not "monitor", "decide" not "determine"
+- Avoid academic terms like "ethical", "clinical", "framework", "mandate", "utilize"
+- Sound curious and friendly, not formal or academic
+- Keep each sentence very short (maximum 15 words each) - NO long, complex sentences
+- Never combine multiple ideas in one sentence - break them into separate short sentences
+- Make it feel like part of an ongoing story
+- Use concrete things everyone can imagine: new laws, habits, public reactions
+"""
+
 def build_question_prompt(
     year: int,
     background: str,
@@ -57,64 +69,46 @@ Available Context:
 {context_block}
 """
     
-    return f"""
+    return f"""<|system|>
 
+You are a storyteller for a turn-based museum game about future memory technology. Sound curious and imaginative, not academic.
 
-ROLE
-You are a storyteller for a turn-based museum game about the future of memory technology.
-You speak in clear, friendly, story-like language that kids aged 10–14 can understand.
-Each round, you ask a question about what groups like groups, cities, or governments etc. should do next.
-Your words should sound curious and imaginative, not formal or academic.
+LANGUAGE: Use simple words (groups/rules/people vs institutions/regulations/participants). Avoid "ethical/clinical/framework". Use action words (create/start/watch vs establish/implement/monitor). Max 15 words per sentence.
 
-CORE MISSION
-Ask a story question that moves time forward and fits the current year {year}.
-The question should show how the world has changed and what new problem people or groups face now, within the {phase_themes}.
-Make it sound like part of a story, not like a report or plan.
+MISSION: Create JSON with question that ends with question mark, options "[WHO] should [ACTION] so that [RESULT]", option_queries (3-6 keywords each).
 
-WORLD STATE & CONTEXT (read carefully; highest priority)
-{world_ctx}
+QUESTION FORMAT:
+1. Story sentence about this year (end with .)
+2. Question about what groups should do next (end with ?)
+3. Combine both under 35 words total
+- MUST end with "?" 
+- Ask about big groups (cities/hospitals/schools), not individuals
+- Show how world changed and what problem groups face
 
-STORY PROGRESSION PRINCIPLES
-- PRIORITY: Keep the world story moving forward each year. Mention how life feels different now.
-- REQUIRED: Focus on what people notice or experience because of past choices.
-- ADVANCED: Show new problems or exciting changes that make the next decision important.
-- BE SPECIFIC: Describe simple, concrete things that kids can imagine — like new laws, new habits, or public reactions.
-- AVOID: Academic words like “institutions”, “regulations”, “participants”, “ethical”, or “clinical”.
-  Use simple ones like “groups”, “rules”, “people”, “safe”, “fair”, or “new idea”.
+OPTIONS FORMAT:
+- Two opposite approaches to SAME problem
+- Structure: "[WHO] should [ACTION] so that [RESULT]"
+- No symbols like [ or " in final output
+- Clear actors (schools/communities/families)
+- Concrete action verbs (build/teach/share/protect)
+- Both must directly answer the question
 
-QUESTION BUILDING GUIDE
-STEP 1: Write one short story sentence about what is happening this year ({year}).
-STEP 2: Ask a clear question (end with '?') about what people or groups should do next.
-STEP 3: Write two opposite options (15–18 words each) following the OPTION BUILDING GUIDE below.
-Keep both parts simple and under 25 words in total.
-- Use clear, story-like language that everyone, including children, can easily understand, without directly addressing the reader.
-- Write for institutions, governments, or large groups (not individuals)
-- Make the question interesting and important
-- Replace overly complex terms with simpler alternatives when possible: "establish"→"create", "implement"→"start", "institutions"→"groups", "participants"→"people", "consequences"→"results", utilize"→"use", "determine"→"decide", "eliminate"→"remove", "monitor"→"watch"
+KEYWORD EXTRACTION:
+- Extract 3-6 key nouns/phrases from each option
+- Example: "memory editing consent procedures"
 
-OPTION BUILDING GUIDE
-- Use simple words everyone can understand, including children.
-- Write 2 clear actions (15–18 words each) that stay directly relevant to the question.
-- The choices should show different ways to solve the same problem: one strict/careful, the other open or exploratory.
-- Avoid abstract or policy terms like "regulate", "mandate", or "framework".
-- Both options must sound logical and reasonable within the story.
+OUTPUT: Valid JSON only with: question, options, option_queries
+Use normal English, no random numbers/broken text.
 
---- KEYWORD EXTRACTION TASK ---
-- Extract 3–6 key nouns or short phrases from each option.
-- Only use concrete words, no verbs or question words.
-- Write them in one line, separated by spaces.
-- Example: "memory editing safety rules"
+<|user|>
+WORLD STATE: {world_ctx}
+Phase: {phase} ({phase_themes})
+Year: {year}
 
-OUTPUT REQUIREMENTS
-- Use only normal English words, no random numbers or broken text
-- Return ONLY valid JSON with these parts: question, options, option_queries
+Create a story question about what happened and what groups should do next, with two opposite options and two keyword queries.
 
-Example:
-{{"question": "Memory editing clinics are getting crowded and many people are waiting. How should hospitals help more people get treatment?", "options": ["Open more clinics in different cities to serve everyone", "Make people wait longer but give better and safer care"], "option_queries": ["expanding medical facilities", "healthcare quality improvement"]}}
-
-Check your own output: if one option sounds silly, off-topic, or humorous, rewrite it seriously.
+<|assistant|>
 """.strip()
-
 
 
 def build_description_prompt(
@@ -187,8 +181,12 @@ Selected Option: {selected_option}
     
     return f"""
 ROLE
-You are a scenario writer creating future consequences for a memory technology story game involving memory manipulation, enhancement, storage, and transfer etc.. 
-Your job is to show what happens after players choose specific actions, focusing on realistic societal changes and new challenges that emerge from their decisions.
+You are a storyteller continuing the future memory technology story.
+Your job is to show what happens next after players make their choice, telling it like an exciting story chapter.
+Focus on what people can see, hear, and feel in this changed world.
+
+LANGUAGE GUIDE
+{STORY_LANGUAGE_RULES}
 
 CORE MISSION
 Generate a descriptive scenario (80-150 words) showing what happens after the selected option "{selected_option}" is implemented in {year}. 
@@ -198,6 +196,7 @@ WORLD STATE & DECISION CONTEXT (read carefully; highest priority)
 {world_ctx}
 
 NARRATIVE PROGRESSION REQUIREMENTS
+- WORLD CONTEXT PRIORITY: Use ALL information from {world_ctx} above - especially Story History - as foundation for new developments
 - STORY CONTINUITY: Build upon Story Context/History but create NEW developments that show how the selected option "{selected_option}" uniquely changes the world
 - ANTI-REPETITION: Avoid repeating situations, phrases, or outcomes from previous scenarios - introduce at least 2 completely new elements (institutions, policies, locations, conflicts)
 - CHOICE SPECIFICITY: Show concrete, measurable results that directly stem from the selected option (new laws with specific names, public reactions in named locations, institutional changes with details)
@@ -205,21 +204,13 @@ NARRATIVE PROGRESSION REQUIREMENTS
 - PRIORITY: Story Context/History takes precedence over background information - use it to create contrast and novelty
 
 SCENARIO WRITING GUIDE
-- CRITICAL YEAR REQUIREMENT: The FIRST sentence MUST start with {year} to establish temporal context
+- CRITICAL YEAR REQUIREMENT: The FIRST sentence MUST start with {year} to establish temporal context, and the last sentence must end with a full stop (.)
 - Include specific details about this time period: concrete dates, new institution names, people's reactions, policy details, and sensory atmosphere  
-- Write as one flowing story paragraph with 5-8 detailed sentences, 80-150 words total (CRITICAL: MUST BE AT LEAST 80 words or response will be rejected)
+- Write as one flowing story paragraph with 5-7 detailed sentences, 80-130 words total (CRITICAL: MUST BE AT LEAST 80 words or response will be rejected)
 - Focus on big groups (clinics, agencies, councils, governments, companies). Do not center individual doctors or patients; avoid personal names
 - Structure: Selected option implementation → Specific results happen → Public reacts → New challenges emerge
-- Use clear, accessible language that children can understand but with sufficient detail for length requirements
 - Make it vivid and interesting: include what you can see/hear/feel (lights, sounds, crowds) and small dramatic differences; at least one sentence should make people think with a question
 - Balance simplicity with adequate detail - each sentence should contribute meaningful information
-
-LANGUAGE CLARITY REQUIREMENTS FOR SCENARIOS
-- Use clear, simple language appropriate for young readers while maintaining narrative richness
-- Replace overly complex terms with simpler alternatives when possible: "establish"→"create", "implement"→"start", "institutions"→"groups", "participants"→"people", "consequences"→"results", utilize"→"use", "determine"→"decide", "eliminate"→"remove", "monitor"→"watch"
-- CRITICAL LENGTH REQUIREMENT: Your response must contain at least 80 words to be accepted - add descriptive details about settings, reactions, and consequences
-- Include rich descriptions of what happens, how people react, what institutions do, and what changes occur
-- Each sentence should add substantial detail rather than just basic facts - describe scenes, emotions, and outcomes thoroughly
 
 FOLLOW-UP RAG QUERY REQUIREMENTS
 - Extract key entities and concepts from the scenario as a declarative keyword phrase
@@ -237,15 +228,13 @@ TASK SPECIFICATION
 2) Create a focused follow-up retrieval query as a declarative keyword phrase
 3) Provide a scenario summary that captures world state changes
 
-OUTPUT FORMAT (automatically validated):
-- Valid JSON with exactly these fields: scenario, scenario_summary, query_text  
-- Scenario: MUST start with the year {year}, then single coherent paragraph, 80-150 words (WILL BE REJECTED IF UNDER 80 words - aim for 85-120 words)
-- Scenario summary: 20-30 words focusing on world state changes and story progression
-- Query text: Declarative keyword phrase (no questions)
-- FORBIDDEN: Template variables, brackets, HTML-like syntax, placeholder text
-- No markdown, code fences, or extra commentary
+OUTPUT FORMAT
+- Return ONLY valid JSON with: scenario, scenario_summary, query_text
+- Scenario: MUST start with {year}, 80-130 words
+- Summary: 20-30 words about world changes
+- Query: keyword phrase (no questions)
 
-Check your own output: if the length is too short or doesn't meet the requirements, revise it until it does.
+Check your output: if too short or doesn't meet requirements, revise it.
 """.strip()
 
 
