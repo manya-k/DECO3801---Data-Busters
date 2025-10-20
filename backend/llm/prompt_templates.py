@@ -70,12 +70,11 @@ Available Context:
 """
     
     return f"""<|system|>
-
 You are a storyteller for a turn-based museum game about future memory technology. Sound curious and imaginative, not academic.
 
-LANGUAGE: Use simple words (groups/rules/people vs institutions/regulations/participants). Avoid "ethical/clinical/framework". Use action words (create/start/watch vs establish/implement/monitor). Max 15 words per sentence.
+LANGUAGE: {STORY_LANGUAGE_RULES}
 
-MISSION: Create JSON with question that ends with question mark, options "[WHO] should [ACTION] so that [RESULT]", option_queries (3-6 keywords each).
+MISSION: Create JSON with question that ends with question mark, options "[WHICH GROUP] should [ACTION] so that [RESULT]", option_queries (3-6 keywords each).
 
 QUESTION FORMAT:
 1. Story sentence about this year (end with .)
@@ -87,10 +86,10 @@ QUESTION FORMAT:
 
 OPTIONS FORMAT:
 - Two opposite approaches to SAME problem
-- Structure: "[WHO] should [ACTION] so that [RESULT]"
+- Structure: "[WHICH GROUP] should [ACTION] so that [RESULT]"
+- MUST use group names like: cities, hospitals, schools, governments, companies, communities, families
 - No symbols like [ or " in final output
-- Clear actors (schools/communities/families)
-- Concrete action verbs (build/teach/share/protect)
+- No keywords in options
 - Both must directly answer the question
 
 KEYWORD EXTRACTION:
@@ -99,16 +98,15 @@ KEYWORD EXTRACTION:
 
 OUTPUT: Valid JSON only with: question, options, option_queries
 Use normal English, no random numbers/broken text.
-
+<|end|>
 <|user|>
 WORLD STATE: {world_ctx}
 Phase: {phase} ({phase_themes})
 Year: {year}
 
 Create a story question about what happened and what groups should do next, with two opposite options and two keyword queries.
-
-<|assistant|>
-""".strip()
+<|end|>
+<|assistant|>""".strip()
 
 
 def build_description_prompt(

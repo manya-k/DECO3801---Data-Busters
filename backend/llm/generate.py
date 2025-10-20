@@ -237,7 +237,7 @@ def refine_question_options(original_result: dict) -> dict:
     ROLE
     You are a storyteller for a turn-based museum game about the future of memory technology.
     You previously produced a question but did not provide exactly two valid options.
-    Rewrite two opposite mini-story option sentences with the REQUIRED STRUCTURE: "[WHO] should [ACTION] so that [RESULT]" with natural language only.
+    Rewrite two opposite mini-story option sentences with the REQUIRED STRUCTURE: "[WHICH GROUP] should [ACTION] so that [RESULT]" with natural language only.
     and do NOT repeat the question text.
 
     Output schema:
@@ -247,10 +247,10 @@ def refine_question_options(original_result: dict) -> dict:
             "Option B"
         ]
     }}
-
+    <|end|>
     <|user|>
     Question: {question}
-
+    <|end|>
     <|assistant|>
     """.strip()
 
