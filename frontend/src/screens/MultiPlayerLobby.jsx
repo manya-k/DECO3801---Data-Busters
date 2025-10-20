@@ -95,9 +95,9 @@ const MultiplayerLobby = () => {
         if (data.mode == "host") {
           if (data.game_started == "False") {
             console.log("went to background screen");
-              navigate(`/projection-host/${code}?playerName=${playerName}&hostName=${data.host}&mode=${mode}`);
+              navigate(`/projection-host/${code}?playerName=${name}&hostName=${data.host}&mode=${mode}`);
           } else {
-              navigate(`/player-room/${code}?playerName=${playerName}&hostName=${playerName}&mode=${mode}`);
+              navigate(`/player-room/${code}?playerName=${name}&hostName=${data.host}&mode=${mode}`);
           }
         } else { 
           navigate(`/background-multi/${code}/${name}&mode=${mode}`);
