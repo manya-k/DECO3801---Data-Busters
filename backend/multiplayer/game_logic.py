@@ -157,7 +157,7 @@ class VotingSession:
             if room != self.room_code:
                 raise ValueError("Room code does not match voting session")
         
-            if player_name in self.voted_players:
+            if not player_name or player_name in self.voted_players:
                 return None
         
             logging.info(f"Player {player_name} voted for option {option_id} in room {room}")  

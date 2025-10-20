@@ -255,10 +255,10 @@ const HostScreen = () => {
       error: turnError,
       status: turnStatus,
       } = useQuery({
-        queryKey: ["scenario", playerName, roomCode, currentTurn, sessionId, roomCode, option_id, year],
+        queryKey: ["scenario", roomCode, currentTurn, sessionId, roomCode, option_id, year],
         queryFn: async () => {
           console.log("submitting option", sessionId);
-          const out = await submitChoice(playerName, roomCode, sessionId,currentTurn.turn_id, year, option_id);
+          const out = await submitChoice("", roomCode, sessionId,currentTurn.turn_id, year, option_id);
           if (!out || !out.scenario || !out.scenario.text) {
             if (!out.room_exists) {
               setRoomDestroyed(true); 
