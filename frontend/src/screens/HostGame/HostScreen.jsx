@@ -71,13 +71,7 @@ const HostScreen = () => {
           return result;
         }
     }, enabled: loadingState == "question", 
-    refetchInterval: (result) => {
-        if (result != null) {
-          return false;
-        } else {
-          3000;
-        }
-    }
+    refetchInterval: 3000
   })
 
 
