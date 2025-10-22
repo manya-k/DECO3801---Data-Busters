@@ -172,7 +172,17 @@ ollama pull qwen3:4b           # Specialized model for scenario generation
 - **Desktop App**: Open the Ollama desktop application; or
 - **Command Line**: Run `ollama serve` in terminal/command prompt
 
-### Step 2: Set Up a Python Virtual Environment
+### Step 2: ComfyUI Installation & Setup
+- download ComfyUI from https://www.comfy.org/download
+- download `dreamshaper v7` from https://civitai.com/models/4384?modelVersionId=109123
+- place the model under `ComfyUI/models/checkpoints`
+- start the ComfyUI server, make sure it is running at port 8000 (should be the default), if default not 8000, switch to port 8000
+    ```bash
+    cd /path/to/ComfyUI
+    python main.py --port 8000
+    ```
+
+### Step 3: Set Up a Python Virtual Environment
 
 Create the virtual environment from the project root.
 
@@ -207,7 +217,7 @@ python -m venv .venv
 > Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 > ```
 
-### Step 3: Install Dependencies
+### Step 4: Install Dependencies
 
 Run these commands from the `backend` folder.
 
@@ -223,7 +233,7 @@ pip install -U pip wheel setuptools
 
 ---
 
-### Step 4: Download NLTK Data & Setup (first-time only)
+### Step 5: Download NLTK Data & Setup (first-time only)
 
 #### macOS
 
@@ -259,7 +269,7 @@ PY
 python -c "from nltk.tokenize import sent_tokenize; print(sent_tokenize('Hello world. This is a test.')); print('NLTK OK')"
 ```
 
-### Step 5: Set up database
+### Step 6: Set up database
 
 **macOS/Linux:**
 
@@ -277,17 +287,19 @@ brew services start postgresql
 C:\Program Files\PostgreSQL\18\bin
 ```
 
-### Step 6: Create DB user
+### Step 7: Create DB user
 
-Note that the `createdb` command may or may not be necessary to set up the database on your device.
-
+**macOS/Linux:**
 ```bash
-createdb $(yourname)
+psql postgres
+```
+**Windows:**
+```bash
 psql -U postgres
 ```
 
 ```sql
--- inside the psql shell, enter
+# inside the shell, enter
 CREATE DATABASE memorysim_db;
 CREATE USER memorysim_user WITH PASSWORD 'password123';
 GRANT ALL PRIVILEGES ON DATABASE memorysim_db TO memorysim_user;
@@ -295,13 +307,11 @@ GRANT ALL PRIVILEGES ON DATABASE memorysim_db TO memorysim_user;
 GRANT ALL ON SCHEMA public TO memorysim_user;
 \q
 ```
+extra step for Windows:
+- Use default setup and remember username/password, enable pgadmin: 
+  memorysim_user > properties > privelages > enable all (superuser)
 
-Extra step for Windows:
-
-- Use default setup and remember username/password, enable pgadmin:
-  memorysim_user > properties > privileges > enable all (superuser)
-
-### Step 7: Run migration
+### Step 8: Run migration
 
 ```bash
 python manage.py makemigrations
@@ -333,7 +343,7 @@ Palette.
 - To run the project, run "Tasks: Run Task" > "Run project".
 - To terminate the project, run "Tasks: Terminate Task" > "All tasks".
 
-### Step 8: Start background manager
+### Step 9: Start background manager
 
 Start the redis server:
 
@@ -349,7 +359,7 @@ redis-server
 redis-server.exe --port 6380 --bind 127.0.0.1
 ```
 
-### Step 9: create 3 workers (each from a different terminal)
+### Step 10: create 3 workers (each from a different terminal)
 
 Ensure your working directory is the `backend` folder, and then:
 
@@ -359,10 +369,6 @@ python manage.py rundramatiq --queues image_queue --processes 1 --threads 1
 python manage.py rundramatiq --queues llm_queue --processes 1 --threads 1
 python manage.py rundramatiq --queues llm_scenario --processes 1 --threads 1
 ```
-
-### Step 10: Set up ComfyUI for image generation
-
-See `backend/images/README.md` for instructions.
 
 ### Step 11: Start the Development Server at port 9000
 
